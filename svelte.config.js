@@ -6,10 +6,14 @@ const config = {
     adapter: adapter({
       runtime: 'nodejs22.x',
     }),
+    paths: {
+      relative: false,
+    },
     csp: {
       mode: 'auto',
       directives: {
         'default-src': ['self'],
+        'style-src': ['self', 'unsafe-inline'],
         'img-src': ['self', 'data:'],
         'font-src': ['self'],
         'connect-src': ['self'],

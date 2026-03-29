@@ -10,21 +10,34 @@
   let difficulty: 'all' | (typeof difficulties)[number] = 'all';
   let language: 'all' | (typeof languages)[number] = 'all';
   let loading = true;
+  let error = '';
 
   async function loadData(nextPage = page) {
     loading = true;
+    error = '';
     const params = new URLSearchParams({
       page: String(nextPage),
       pageSize: '10'
     });
     if (difficulty !== 'all') params.set('difficulty', difficulty);
     if (language !== 'all') params.set('language', language);
-    const response = await fetch(`/api/leaderboard?${params.toString()}`);
-    const data = await response.json();
-    rows = data.items;
-    page = data.pagination.page;
-    totalPages = data.pagination.totalPages;
-    loading = false;
+    try {
+      const response = await fetch(`/api/leaderboard?${params.toString()}`);
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.pagination) {
+        throw new Error(data?.error ?? 'Unable to load leaderboard');
+      }
+      rows = data.items;
+      page = data.pagination.page;
+      totalPages = data.pagination.totalPages;
+    } catch (err) {
+      rows = [];
+      page = 1;
+      totalPages = 1;
+      error = err instanceof Error ? err.message : 'Unable to load leaderboard';
+    } finally {
+      loading = false;
+    }
   }
 
   onMount(() => loadData());
@@ -63,6 +76,10 @@
     </div>
   </div>
 
+  {#if error}
+    <p class="panel error">{error}</p>
+  {/if}
+
   <LeaderboardTable {rows} {page} {totalPages} {loading} onPageChange={(next) => loadData(next)} />
 </section>
 
@@ -99,6 +116,12 @@
     gap: 0.75rem;
     padding: 1rem;
     flex-wrap: wrap;
+  }
+
+  .error {
+    margin: 0;
+    padding: 1rem;
+    color: var(--danger);
   }
 
   @media (max-width: 920px) {
