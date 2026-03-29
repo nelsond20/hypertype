@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import LeaderboardTable from '$lib/components/LeaderboardTable.svelte';
-  import { difficulties, languages } from '$lib/shared/types';
-  import type { LeaderboardItem } from '$lib/shared/types';
+  import { difficulties, languages } from '$lib/domain/game/types';
+  import type { LeaderboardItem } from '$lib/domain/game/types';
 
   let rows: LeaderboardItem[] = [];
   let page = 1;

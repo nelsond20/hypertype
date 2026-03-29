@@ -5,10 +5,21 @@
   import Modal from './Modal.svelte';
   import StatsBar from './StatsBar.svelte';
   import TextDisplay from './TextDisplay.svelte';
-  import { generateCorpusText } from '$lib/shared/corpus';
-  import { calculateAccuracy, calculateWpm, deriveScore } from '$lib/shared/scoring';
-  import { defaultPreferences, savePreferences } from '$lib/shared/preferences';
-  import type { GameSettings, RawKeyEvent, ScoreRecord } from '$lib/shared/types';
+  import {
+    defaultPreferences,
+    savePreferences,
+  } from '$lib/application/preferences/local-game-preferences';
+  import { generateCorpusText } from '$lib/domain/game/corpus';
+  import {
+    calculateAccuracy,
+    calculateWpm,
+    deriveScore,
+  } from '$lib/domain/game/scoring';
+  import type {
+    GameSettings,
+    RawKeyEvent,
+    ScoreRecord,
+  } from '$lib/domain/game/types';
 
   export let settings: GameSettings = defaultPreferences;
 

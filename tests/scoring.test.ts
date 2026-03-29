@@ -3,7 +3,7 @@ import {
   calculateAccuracy,
   calculateWpm,
   detectImpossibleRawEvents,
-} from '$lib/shared/scoring';
+} from '$lib/domain/game/scoring';
 
 describe('scoring', () => {
   it('calculates wpm from correct chars and duration', () => {

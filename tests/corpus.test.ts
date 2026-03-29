@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateCorpusText } from '$lib/shared/corpus';
+import { generateCorpusText } from '$lib/domain/game/corpus';
 
 describe('corpus', () => {
   it('is deterministic for the same seed', () => {

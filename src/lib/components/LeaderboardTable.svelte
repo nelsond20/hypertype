@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LeaderboardItem } from '$lib/shared/types';
+  import type { LeaderboardItem } from '$lib/domain/game/types';
 
   export let rows: LeaderboardItem[] = [];
   export let page = 1;

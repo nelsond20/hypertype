@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { defaultPreferences, loadPreferences, savePreferences } from '$lib/shared/preferences';
-  import type { GameSettings } from '$lib/shared/types';
+  import {
+    defaultPreferences,
+    loadPreferences,
+    savePreferences,
+  } from '$lib/application/preferences/local-game-preferences';
+  import type { GameSettings } from '$lib/domain/game/types';
 
   let settings: GameSettings = defaultPreferences;
   let saved = false;

@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { buildSecurityHeaders } from '$lib/server/security';
+import { buildSecurityHeaders } from '$lib/infrastructure/security/request-guards';
 
 export const handle: Handle = async ({ event, resolve }) => {
   const response = await resolve(event);
