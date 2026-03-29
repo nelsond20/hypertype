@@ -6,12 +6,14 @@
     loadPreferences,
     savePreferences,
   } from '$lib/application/preferences/local-game-preferences';
-  import type { GameSettings } from '$lib/domain/game/types';
+  import type { GameSettings, SessionLength } from '$lib/domain/game/types';
 
   let settings: GameSettings = defaultPreferences;
+  let gameSessionKey = `${settings.difficulty}:${settings.language}:${settings.textLength}:${settings.durationSeconds}`;
 
   onMount(() => {
     settings = loadPreferences();
+    refreshGameSession();
     sessionStorage.setItem('hypertype:lastSettings', JSON.stringify(settings));
   });
 
@@ -19,6 +21,10 @@
     settings = { ...settings, ...next };
     savePreferences(settings);
     sessionStorage.setItem('hypertype:lastSettings', JSON.stringify(settings));
+  }
+
+  function refreshGameSession() {
+    gameSessionKey = `${settings.difficulty}:${settings.language}:${settings.textLength}:${settings.durationSeconds}`;
   }
 </script>
 
@@ -42,7 +48,12 @@
   <div class="controls panel">
     <label class="field">
       <span>Difficulty</span>
-      <select bind:value={settings.difficulty} on:change={() => updateSettings({ difficulty: settings.difficulty })}>
+      <select
+        bind:value={settings.difficulty}
+        on:change={() => {
+          updateSettings({ difficulty: settings.difficulty });
+          refreshGameSession();
+        }}>
         <option value="easy">Easy</option>
         <option value="medium">Medium</option>
         <option value="hard">Hard</option>
@@ -50,7 +61,12 @@
     </label>
     <label class="field">
       <span>Language</span>
-      <select bind:value={settings.language} on:change={() => updateSettings({ language: settings.language })}>
+      <select
+        bind:value={settings.language}
+        on:change={() => {
+          updateSettings({ language: settings.language });
+          refreshGameSession();
+        }}>
         <option value="typescript">TypeScript</option>
         <option value="javascript">JavaScript</option>
         <option value="python">Python</option>
@@ -61,7 +77,12 @@
     </label>
     <label class="field">
       <span>Length</span>
-      <select bind:value={settings.textLength} on:change={() => updateSettings({ textLength: settings.textLength })}>
+      <select
+        bind:value={settings.textLength}
+        on:change={() => {
+          updateSettings({ textLength: settings.textLength });
+          refreshGameSession();
+        }}>
         <option value="short">Short</option>
         <option value="medium">Medium</option>
         <option value="long">Long</option>
@@ -69,8 +90,14 @@
     </label>
     <label class="field">
       <span>Timer</span>
-      <select bind:value={settings.durationSeconds} on:change={() => updateSettings({ durationSeconds: settings.durationSeconds })}>
-        <option value={5}>5s</option>
+      <select
+        bind:value={settings.durationSeconds}
+        on:change={(event) => {
+          const value = Number((event.currentTarget as HTMLSelectElement).value) as SessionLength;
+          updateSettings({ durationSeconds: value });
+          refreshGameSession();
+        }}>
+        <option value={30}>30s</option>
         <option value={45}>45s</option>
         <option value={60}>60s</option>
       </select>
@@ -81,7 +108,7 @@
     </label>
   </div>
 
-  {#key `${settings.difficulty}:${settings.language}:${settings.textLength}:${settings.durationSeconds}:${settings.playerName}`}
+  {#key gameSessionKey}
     <Game {settings} />
   {/key}
 </section>

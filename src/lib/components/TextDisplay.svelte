@@ -1,10 +1,14 @@
 <script lang="ts">
   export let target = '';
   export let typed = '';
+  export let lockedError = false;
 
   function status(index: number) {
     if (index < typed.length) {
       return typed[index] === target[index] ? 'correct' : 'incorrect';
+    }
+    if (lockedError && index === typed.length) {
+      return 'blocked';
     }
     return index === typed.length ? 'cursor' : 'pending';
   }
@@ -13,7 +17,7 @@
 <section class="text panel" aria-label="Typing text">
   <p class="mono">
     {#each target.split('') as char, index}
-      <span class:correct={status(index) === 'correct'} class:incorrect={status(index) === 'incorrect'} class:cursor={status(index) === 'cursor'}>
+      <span class:correct={status(index) === 'correct'} class:incorrect={status(index) === 'incorrect'} class:blocked={status(index) === 'blocked'} class:cursor={status(index) === 'cursor'}>
         {char === ' ' ? '\u00A0' : char}
       </span>
     {/each}
@@ -50,6 +54,11 @@
     text-decoration: underline;
     text-decoration-color: rgba(255, 107, 129, 0.85);
     text-underline-offset: 0.17em;
+  }
+
+  span.blocked {
+    color: var(--danger);
+    background: rgba(255, 107, 129, 0.12);
   }
 
   span.cursor::after {

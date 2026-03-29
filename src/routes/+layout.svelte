@@ -12,7 +12,7 @@
 
 <div class="app-frame">
   <header class="topbar shell">
-    <a class="brand" href="/">
+    <a class="brand" href="/home">
       <span class="brand-mark">HT</span>
       <span>
         <strong>HyperType</strong>
@@ -20,6 +20,7 @@
       </span>
     </a>
     <nav class="nav">
+      <a class:active={$page.url.pathname === '/home'} href="/home">Home</a>
       <a class:active={$page.url.pathname === '/play'} href="/play">Play</a>
       <a class:active={$page.url.pathname === '/leaderboard'} href="/leaderboard">Leaderboard</a>
       <a class:active={$page.url.pathname === '/settings'} href="/settings">Settings</a>

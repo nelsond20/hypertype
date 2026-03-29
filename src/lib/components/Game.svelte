@@ -9,7 +9,7 @@
     defaultPreferences,
     savePreferences,
   } from '$lib/application/preferences/local-game-preferences';
-  import { generateCorpusText } from '$lib/domain/game/corpus';
+  import { getCorpusText } from '$lib/application/game/get-corpus-text';
   import {
     calculateAccuracy,
     calculateWpm,
@@ -23,9 +23,18 @@
 
   export let settings: GameSettings = defaultPreferences;
 
+  function buildPrompt(nextSettings: GameSettings, seed: number) {
+    return getCorpusText({
+      difficulty: nextSettings.difficulty,
+      language: nextSettings.language,
+      textLength: nextSettings.textLength,
+      seed,
+    }).text;
+  }
+
   let seeded = Math.floor(Math.random() * 1_000_000_000);
   let gameId = nanoid();
-  let prompt = '';
+  let prompt = buildPrompt(settings, seeded);
   let typed = '';
   let previousTyped = '';
   let startedAt = 0;
@@ -40,23 +49,107 @@
   let combo = 0;
   let bestCombo = 0;
   let submittedAt: string | null = null;
-  let inputEl: HTMLTextAreaElement | null = null;
   let error = '';
   let clock = Date.now();
   let correctChars = 0;
+  let isCaptureActive = false;
+  let invalidInput = false;
+  let invalidInputTimer: ReturnType<typeof setTimeout> | null = null;
+  let promptAreaEl: HTMLDivElement | null = null;
+
+  function focusCapture() {
+    isCaptureActive = true;
+  }
+
+  function triggerInvalidInput() {
+    invalidInput = true;
+    if (invalidInputTimer) {
+      clearTimeout(invalidInputTimer);
+    }
+    invalidInputTimer = setTimeout(() => {
+      invalidInput = false;
+      invalidInputTimer = null;
+    }, 1000);
+  }
+
+  function applyVirtualKey(key: string) {
+    if (finished) return;
+    const previous = typed;
+    let current = typed;
+    const nextExpected = prompt[typed.length];
+
+    if (key === 'Backspace') {
+      current = current.slice(0, -1);
+      invalidInput = false;
+    } else if (key === 'Enter') {
+      if (nextExpected !== '\n') {
+        triggerInvalidInput();
+        return;
+      }
+      current = `${current}\n`;
+    } else if (key.length === 1) {
+      if (key !== nextExpected) {
+        triggerInvalidInput();
+        return;
+      }
+      current = `${current}${key}`;
+    } else {
+      return;
+    }
+
+    onTypingInput(previous, current.slice(0, prompt.length));
+  }
+
+  function onGlobalKeydown(event: KeyboardEvent) {
+    if (finished || event.defaultPrevented) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target;
+    const isEditableTarget =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLElement && target.isContentEditable);
+
+    if (isEditableTarget) return;
+
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      focusCapture();
+      return;
+    }
+
+    if (!isCaptureActive) {
+      if (event.key === 'Backspace' || event.key === 'Enter' || event.key.length === 1) {
+        event.preventDefault();
+        focusCapture();
+        applyVirtualKey(event.key);
+      }
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      isCaptureActive = false;
+      return;
+    }
+
+    if (event.key === 'Backspace' || event.key === 'Enter' || event.key.length === 1) {
+      event.preventDefault();
+      applyVirtualKey(event.key);
+    }
+  }
+
+  function onPromptAreaKeydown(event: KeyboardEvent) {
+    if (!isCaptureActive && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      focusCapture();
+    }
+  }
 
   function resetGame(nextSettings = settings) {
     settings = nextSettings;
     savePreferences(settings);
     seeded = Math.floor(Math.random() * 1_000_000_000);
     gameId = nanoid();
-    const generated = generateCorpusText({
-      difficulty: settings.difficulty,
-      language: settings.language,
-      seed: seeded,
-      textLength: settings.textLength
-    });
-    prompt = generated.text;
+    prompt = buildPrompt(settings, seeded);
     typed = '';
     previousTyped = '';
     startedAt = 0;
@@ -66,16 +159,14 @@
     shareOpen = false;
     message = '';
     error = '';
+    isCaptureActive = false;
+    invalidInput = false;
     rawEvents = [];
     backspaces = 0;
     combo = 0;
     bestCombo = 0;
     submittedAt = null;
     clock = Date.now();
-    if (inputEl) {
-      inputEl.value = '';
-      inputEl.focus();
-    }
   }
 
   function startTimer() {
@@ -108,23 +199,21 @@
     return count;
   }
 
-  function onTypingInput() {
+  function onTypingInput(previous = typed, current = typed) {
     if (finished) return;
     if (!startedAt) startTimer();
-
-    const current = inputEl?.value ?? '';
     const now = Date.now();
-    const isDeletion = current.length < previousTyped.length;
-    const added = current.length > previousTyped.length ? current.slice(previousTyped.length) : '';
+    const isDeletion = current.length < previous.length;
+    const added = current.length > previous.length ? current.slice(previous.length) : '';
 
     if (isDeletion) {
-      backspaces += previousTyped.length - current.length;
+      backspaces += previous.length - current.length;
       combo = 0;
       rawEvents.push({ key: 'Backspace', ts: now, type: 'backspace' });
     } else if (added) {
       for (const [index, key] of [...added].entries()) {
         rawEvents.push({ key, ts: now, type: 'input' });
-        const promptIndex = previousTyped.length + index;
+        const promptIndex = previous.length + index;
         if (key === prompt[promptIndex]) {
           combo += 1;
           bestCombo = Math.max(bestCombo, combo);
@@ -135,7 +224,7 @@
     }
 
     typed = current.slice(0, prompt.length);
-    previousTyped = current;
+    previousTyped = typed;
     clock = now;
     if (typed === prompt || timeLeft === 0) {
       finish();
@@ -218,7 +307,7 @@
 
   function retry() {
     resetGame(settings);
-    if (inputEl) inputEl.focus();
+    focusCapture();
   }
 
   async function shareResult() {
@@ -257,30 +346,79 @@
       }
     }
     resetGame(settings);
-    const handler = () => inputEl?.focus();
+    const handler = (event: PointerEvent) => {
+      const target = event.target;
+      const clickedInsideGame =
+        target instanceof Node && promptAreaEl?.contains(target);
+
+      if (!clickedInsideGame) {
+        isCaptureActive = false;
+      }
+    };
     window.addEventListener('pointerdown', handler);
-    return () => window.removeEventListener('pointerdown', handler);
+    window.addEventListener('keydown', onGlobalKeydown);
+    return () => {
+      window.removeEventListener('pointerdown', handler);
+      window.removeEventListener('keydown', onGlobalKeydown);
+    };
   });
 
+  $: if (!prompt) {
+    prompt = buildPrompt(settings, seeded);
+  }
+
+  $: if (!startedAt && !finished) {
+    timeLeft = settings.durationSeconds;
+  }
+
   onDestroy(() => stopTimer());
+  onDestroy(() => {
+    if (invalidInputTimer) {
+      clearTimeout(invalidInputTimer);
+    }
+  });
 </script>
 
 <div class="game-grid">
   <div class="stack">
     <StatsBar wpm={liveWpm} accuracy={liveAccuracy} {timeLeft} {combo} {progress} />
-    <TextDisplay target={prompt} {typed} />
-    <textarea
-      bind:this={inputEl}
-      aria-label="Type the code shown above"
-      class="capture"
-      autocapitalize="off"
-      autocomplete="off"
-      spellcheck="false"
-      rows="8"
-      on:input={onTypingInput}
-      placeholder="Start typing..."></textarea>
+    <div
+      bind:this={promptAreaEl}
+      class:ready={isCaptureActive}
+      class:invalid={invalidInput}
+      class:finished={finished && timeLeft === 0}
+      class="prompt-area"
+      role="button"
+      tabindex="0"
+      aria-label="Focus the typing area"
+      on:click={focusCapture}
+      on:keydown={onPromptAreaKeydown}>
+      <div class="capture-status">
+        <strong>{isCaptureActive ? 'Keyboard ready' : 'Press any key or click here to start typing'}</strong>
+        <span class="subtle">
+          {isCaptureActive
+            ? 'Your keystrokes are being captured now. Press Esc to pause.'
+            : 'The first key will arm the session and start the timer.'}
+        </span>
+      </div>
+      <TextDisplay target={prompt} {typed} lockedError={invalidInput} />
+      {#if finished && timeLeft === 0}
+        <div class="time-up-overlay panel" aria-live="polite">
+          <div class="time-up-copy">
+            <strong>TIME&apos;S UP</strong>
+            <span class="subtle">The run ended. Start a fresh seeded session.</span>
+          </div>
+          <button
+            class="button primary icon-button"
+            type="button"
+            aria-label="Retry"
+            on:click={retry}>
+            <span class="play-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      {/if}
+    </div>
     <div class="actions">
-      <button class="button primary" type="button" on:click={() => inputEl?.focus()}>Focus typing area</button>
       <button class="button ghost" type="button" on:click={retry}>Retry</button>
       <button class="button ghost" type="button" on:click={shareResult} disabled={!finished}>Share</button>
     </div>
@@ -342,12 +480,110 @@
     gap: 1rem;
   }
 
-  .capture {
+  .prompt-area {
+    display: grid;
+    gap: 0.8rem;
+    border-radius: var(--radius);
+    outline: none;
+    position: relative;
+    padding: 0.8rem;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.015);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+
+  .prompt-area:focus-visible {
+    box-shadow: 0 0 0 2px rgba(115, 224, 196, 0.45);
+  }
+
+  .capture-status {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border: 1px dashed rgba(159, 176, 204, 0.32);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .prompt-area.ready .capture-status {
+    border-color: rgba(115, 224, 196, 0.45);
+    background: rgba(115, 224, 196, 0.08);
+  }
+
+  .prompt-area.invalid {
+    animation: shake 300ms ease-in-out;
+    border-color: rgba(255, 107, 129, 0.88);
+    box-shadow: 0 0 0 1px rgba(255, 107, 129, 0.45);
+    background: rgba(255, 107, 129, 0.06);
+  }
+
+  .prompt-area.invalid .capture-status {
+    border-color: rgba(255, 107, 129, 0.72);
+    background: rgba(255, 107, 129, 0.12);
+  }
+
+  .prompt-area.invalid :global(.text.panel) {
+    border-color: rgba(255, 107, 129, 0.88);
+    box-shadow: none;
+  }
+
+  .prompt-area.ready:not(.invalid):not(.finished) {
+    border-color: rgba(115, 224, 196, 0.45);
+    box-shadow: 0 0 0 1px rgba(115, 224, 196, 0.22);
+    background: rgba(115, 224, 196, 0.04);
+  }
+
+  .prompt-area.ready:not(.invalid):not(.finished) .capture-status {
+    border-color: rgba(115, 224, 196, 0.45);
+    background: rgba(115, 224, 196, 0.08);
+  }
+
+  .capture-status strong {
+    font-size: 0.95rem;
+  }
+
+  .time-up-overlay {
     position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    gap: 0.8rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(7, 17, 31, 0.76);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 107, 129, 0.42);
+    z-index: 2;
+  }
+
+  .time-up-copy {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .icon-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    justify-self: center;
+  }
+
+  .play-icon {
+    width: 0;
+    height: 0;
+    margin-left: 0.18rem;
+    border-top: 0.55rem solid transparent;
+    border-bottom: 0.55rem solid transparent;
+    border-left: 0.95rem solid currentColor;
+  }
+
+  .time-up-overlay strong {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    letter-spacing: 0.12em;
   }
 
   .actions,
@@ -395,6 +631,25 @@
 
   .error {
     color: var(--danger);
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-8px);
+    }
+    40% {
+      transform: translateX(7px);
+    }
+    60% {
+      transform: translateX(-5px);
+    }
+    80% {
+      transform: translateX(4px);
+    }
   }
 
   @media (max-width: 920px) {
