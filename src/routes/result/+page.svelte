@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { ScoreRecord } from '$lib/shared/types';
+  import type { ScoreRecord } from '$lib/domain/game/types';
 
   let score: (ScoreRecord & { prompt?: string }) | null = null;
   let ready = false;

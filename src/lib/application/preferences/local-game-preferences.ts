@@ -1,4 +1,4 @@
-import type { GameSettings } from './types';
+import type { GameSettings } from '$lib/domain/game/types';
 
 const key = 'hypertype:preferences';
 
