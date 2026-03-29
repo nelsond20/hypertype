@@ -1,14 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getDb } from '$lib/server/db';
-import { isProduction } from '$lib/server/security';
+import { getSystemHealth } from '$lib/application/system/get-system-health';
 
 export const GET: RequestHandler = async () => {
-  const db = await getDb().catch(() => null);
-  return json({
-    ok: true,
-    service: 'hypertype',
-    database: db ? 'connected' : 'missing',
-    environment: isProduction() ? 'production' : 'development',
-  });
+  return json(await getSystemHealth());
 };
