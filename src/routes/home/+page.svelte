@@ -218,15 +218,16 @@
 
   .sections {
     padding: 1rem 0 2rem;
-    display: grid;
-    gap: 1rem;
   }
 
-  .section-copy h2,
-  .final h2 {
-    margin: 0.3rem 0 0.6rem;
-    font-size: clamp(2rem, 5vw, 3.6rem);
-    letter-spacing: -0.04em;
+  .section-copy {
+    margin-bottom: 1rem;
+  }
+
+  .section-copy h2 {
+    margin: 0.3rem 0 0.75rem;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    letter-spacing: -0.05em;
   }
 
   .grid {
@@ -235,34 +236,38 @@
     gap: 1rem;
   }
 
-  article {
+  .grid article {
     padding: 1rem;
-    border: 1px solid var(--line);
     border-radius: var(--radius);
+    border: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.03);
-    min-height: 180px;
   }
 
-  article h3 {
-    margin: 0 0 0.6rem;
-    font-size: 1.2rem;
+  .grid h3 {
+    margin: 0 0 0.55rem;
   }
 
-  article p {
+  .grid p {
     margin: 0;
     color: var(--muted);
     line-height: 1.7;
   }
 
   .final {
+    padding: 0 0 3rem;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
-    padding: 1.2rem 0 3rem;
   }
 
-  @media (max-width: 900px) {
+  .final h2 {
+    margin: 0.35rem 0 0;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    letter-spacing: -0.05em;
+  }
+
+  @media (max-width: 980px) {
     .hero-grid,
     .grid,
     .final {
@@ -270,12 +275,8 @@
       display: grid;
     }
 
-    .copy h1 {
-      max-width: none;
-    }
-
-    .final {
-      align-items: start;
+    .hero-grid {
+      min-height: auto;
     }
   }
 </style>

@@ -53,21 +53,45 @@
   let clock = Date.now();
   let correctChars = 0;
   let isCaptureActive = false;
+  let invalidInput = false;
+  let invalidInputTimer: ReturnType<typeof setTimeout> | null = null;
+  let promptAreaEl: HTMLDivElement | null = null;
 
   function focusCapture() {
     isCaptureActive = true;
+  }
+
+  function triggerInvalidInput() {
+    invalidInput = true;
+    if (invalidInputTimer) {
+      clearTimeout(invalidInputTimer);
+    }
+    invalidInputTimer = setTimeout(() => {
+      invalidInput = false;
+      invalidInputTimer = null;
+    }, 1000);
   }
 
   function applyVirtualKey(key: string) {
     if (finished) return;
     const previous = typed;
     let current = typed;
+    const nextExpected = prompt[typed.length];
 
     if (key === 'Backspace') {
       current = current.slice(0, -1);
+      invalidInput = false;
     } else if (key === 'Enter') {
+      if (nextExpected !== '\n') {
+        triggerInvalidInput();
+        return;
+      }
       current = `${current}\n`;
     } else if (key.length === 1) {
+      if (key !== nextExpected) {
+        triggerInvalidInput();
+        return;
+      }
       current = `${current}${key}`;
     } else {
       return;
@@ -114,7 +138,7 @@
   }
 
   function onPromptAreaKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || (event.key === ' ' && !isCaptureActive)) {
+    if (!isCaptureActive && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault();
       focusCapture();
     }
@@ -136,6 +160,7 @@
     message = '';
     error = '';
     isCaptureActive = false;
+    invalidInput = false;
     rawEvents = [];
     backspaces = 0;
     combo = 0;
@@ -321,9 +346,13 @@
       }
     }
     resetGame(settings);
-    const handler = () => {
-      if (isCaptureActive) {
-        focusCapture();
+    const handler = (event: PointerEvent) => {
+      const target = event.target;
+      const clickedInsideGame =
+        target instanceof Node && promptAreaEl?.contains(target);
+
+      if (!clickedInsideGame) {
+        isCaptureActive = false;
       }
     };
     window.addEventListener('pointerdown', handler);
@@ -338,14 +367,26 @@
     prompt = buildPrompt(settings, seeded);
   }
 
+  $: if (!startedAt && !finished) {
+    timeLeft = settings.durationSeconds;
+  }
+
   onDestroy(() => stopTimer());
+  onDestroy(() => {
+    if (invalidInputTimer) {
+      clearTimeout(invalidInputTimer);
+    }
+  });
 </script>
 
 <div class="game-grid">
   <div class="stack">
     <StatsBar wpm={liveWpm} accuracy={liveAccuracy} {timeLeft} {combo} {progress} />
     <div
+      bind:this={promptAreaEl}
       class:ready={isCaptureActive}
+      class:invalid={invalidInput}
+      class:finished={finished && timeLeft === 0}
       class="prompt-area"
       role="button"
       tabindex="0"
@@ -360,12 +401,24 @@
             : 'The first key will arm the session and start the timer.'}
         </span>
       </div>
-      <TextDisplay target={prompt} {typed} />
+      <TextDisplay target={prompt} {typed} lockedError={invalidInput} />
+      {#if finished && timeLeft === 0}
+        <div class="time-up-overlay panel" aria-live="polite">
+          <div class="time-up-copy">
+            <strong>TIME&apos;S UP</strong>
+            <span class="subtle">The run ended. Start a fresh seeded session.</span>
+          </div>
+          <button
+            class="button primary icon-button"
+            type="button"
+            aria-label="Retry"
+            on:click={retry}>
+            <span class="play-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      {/if}
     </div>
     <div class="actions">
-      <button class="button primary" type="button" on:click={focusCapture}>
-        {isCaptureActive ? 'Typing active' : 'Start typing'}
-      </button>
       <button class="button ghost" type="button" on:click={retry}>Retry</button>
       <button class="button ghost" type="button" on:click={shareResult} disabled={!finished}>Share</button>
     </div>
@@ -432,6 +485,14 @@
     gap: 0.8rem;
     border-radius: var(--radius);
     outline: none;
+    position: relative;
+    padding: 0.8rem;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.015);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
   }
 
   .prompt-area:focus-visible {
@@ -452,8 +513,77 @@
     background: rgba(115, 224, 196, 0.08);
   }
 
+  .prompt-area.invalid {
+    animation: shake 300ms ease-in-out;
+    border-color: rgba(255, 107, 129, 0.88);
+    box-shadow: 0 0 0 1px rgba(255, 107, 129, 0.45);
+    background: rgba(255, 107, 129, 0.06);
+  }
+
+  .prompt-area.invalid .capture-status {
+    border-color: rgba(255, 107, 129, 0.72);
+    background: rgba(255, 107, 129, 0.12);
+  }
+
+  .prompt-area.invalid :global(.text.panel) {
+    border-color: rgba(255, 107, 129, 0.88);
+    box-shadow: none;
+  }
+
+  .prompt-area.ready:not(.invalid):not(.finished) {
+    border-color: rgba(115, 224, 196, 0.45);
+    box-shadow: 0 0 0 1px rgba(115, 224, 196, 0.22);
+    background: rgba(115, 224, 196, 0.04);
+  }
+
+  .prompt-area.ready:not(.invalid):not(.finished) .capture-status {
+    border-color: rgba(115, 224, 196, 0.45);
+    background: rgba(115, 224, 196, 0.08);
+  }
+
   .capture-status strong {
     font-size: 0.95rem;
+  }
+
+  .time-up-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    gap: 0.8rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(7, 17, 31, 0.76);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 107, 129, 0.42);
+    z-index: 2;
+  }
+
+  .time-up-copy {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .icon-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    justify-self: center;
+  }
+
+  .play-icon {
+    width: 0;
+    height: 0;
+    margin-left: 0.18rem;
+    border-top: 0.55rem solid transparent;
+    border-bottom: 0.55rem solid transparent;
+    border-left: 0.95rem solid currentColor;
+  }
+
+  .time-up-overlay strong {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    letter-spacing: 0.12em;
   }
 
   .actions,
@@ -501,6 +631,25 @@
 
   .error {
     color: var(--danger);
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-8px);
+    }
+    40% {
+      transform: translateX(7px);
+    }
+    60% {
+      transform: translateX(-5px);
+    }
+    80% {
+      transform: translateX(4px);
+    }
   }
 
   @media (max-width: 920px) {
