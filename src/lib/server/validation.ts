@@ -1,11 +1,16 @@
 import { z } from 'zod';
 import { detectImpossibleRawEvents } from '$lib/shared/scoring';
-import { getServerEnv } from '$lib/server/env';
+import { getNumberEnv } from '$lib/server/env';
 import { difficulties, languages } from '$lib/shared/types';
 
 export const submitSchema = z.object({
   gameId: z.string().min(8),
-  userName: z.string().min(1).max(32),
+  userName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(32)
+    .regex(/^[\w .-]{1,32}$/),
   wpm: z.number().nonnegative(),
   accuracy: z.number().min(0).max(100),
   correctChars: z.number().int().nonnegative(),
@@ -18,11 +23,12 @@ export const submitSchema = z.object({
   rawEvents: z
     .array(
       z.object({
-        key: z.string(),
+        key: z.string().min(1).max(24),
         ts: z.number(),
         type: z.enum(['keydown', 'input', 'backspace']),
       }),
     )
+    .max(2500)
     .optional(),
 });
 
@@ -41,7 +47,11 @@ export function validateScorePayload(payload: unknown) {
     return { ok: false as const, error: 'Keystrokes mismatch' };
   }
 
-  const maxWpm = Number(getServerEnv('MAX_WPM') ?? 300);
+  if (data.wrongChars > data.keystrokes) {
+    return { ok: false as const, error: 'Wrong chars mismatch' };
+  }
+
+  const maxWpm = getNumberEnv('MAX_WPM', 300);
   if (data.wpm > maxWpm) {
     return { ok: false as const, error: 'WPM too high' };
   }
