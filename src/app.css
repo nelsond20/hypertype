@@ -1,0 +1,154 @@
+:root {
+  color-scheme: dark;
+  --bg: #07111f;
+  --bg-soft: #0d1a2f;
+  --panel: rgba(10, 18, 33, 0.78);
+  --panel-solid: #0d1728;
+  --line: rgba(183, 208, 255, 0.14);
+  --text: #edf4ff;
+  --muted: #9fb0cc;
+  --accent: #73e0c4;
+  --accent-strong: #8f9bff;
+  --danger: #ff6b81;
+  --warning: #ffd26a;
+  --success: #55d39a;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --mono:
+    'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono',
+    monospace;
+  --sans: 'Avenir Next', 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+  font-family: var(--sans);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(115, 224, 196, 0.18),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(143, 155, 255, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #050a13, var(--bg) 38%, #050a13 100%);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: transparent;
+  color: var(--text);
+}
+
+body {
+  min-height: 100svh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(115, 224, 196, 0.25);
+}
+
+.shell {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.panel {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.subtle {
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.9rem 1.2rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(115, 224, 196, 0.45);
+  background: rgba(115, 224, 196, 0.08);
+  outline: none;
+}
+
+.button.primary {
+  background: linear-gradient(
+    135deg,
+    rgba(115, 224, 196, 0.18),
+    rgba(143, 155, 255, 0.18)
+  );
+  border-color: rgba(115, 224, 196, 0.35);
+}
+
+.button.ghost {
+  background: transparent;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.field select,
+.field input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 0.85rem 1rem;
+}
+
+.field select:focus-visible,
+.field input:focus-visible {
+  outline: 2px solid rgba(115, 224, 196, 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100%, calc(100% - 20px));
+  }
+}

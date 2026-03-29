@@ -1,0 +1,72 @@
+<script lang="ts">
+  export let target = '';
+  export let typed = '';
+
+  function status(index: number) {
+    if (index < typed.length) {
+      return typed[index] === target[index] ? 'correct' : 'incorrect';
+    }
+    return index === typed.length ? 'cursor' : 'pending';
+  }
+</script>
+
+<section class="text panel" aria-label="Typing text">
+  <p class="mono">
+    {#each target.split('') as char, index}
+      <span class:correct={status(index) === 'correct'} class:incorrect={status(index) === 'incorrect'} class:cursor={status(index) === 'cursor'}>
+        {char === ' ' ? '\u00A0' : char}
+      </span>
+    {/each}
+  </p>
+</section>
+
+<style>
+  .text {
+    padding: 1.2rem;
+    min-height: 250px;
+  }
+
+  p {
+    margin: 0;
+    font-size: clamp(1rem, 2vw, 1.34rem);
+    line-height: 1.9;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: rgba(237, 244, 255, 0.58);
+  }
+
+  span {
+    position: relative;
+    border-radius: 4px;
+    padding: 0 0.01em;
+  }
+
+  span.correct {
+    color: var(--text);
+  }
+
+  span.incorrect {
+    color: var(--danger);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 107, 129, 0.85);
+    text-underline-offset: 0.17em;
+  }
+
+  span.cursor::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.1em;
+    width: 100%;
+    height: 0.16em;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.15;
+    }
+  }
+</style>
