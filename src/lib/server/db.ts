@@ -1,34 +1,28 @@
-import { MongoClient, type Db, type Collection } from 'mongodb';
-import type { LeaderboardItem } from '$lib/shared/types';
-
-let client: MongoClient | null = null;
-let clientPromise: Promise<MongoClient> | null = null;
+import mongoose from 'mongoose';
+import { getServerEnv } from './env';
+import { ScoreModel } from './score.model';
 
 function getMongoUri() {
-  return process.env.MONGODB_URI;
+  return getServerEnv('MONGODB_URI');
 }
 
-export async function getDb(): Promise<Db | null> {
+let connectionPromise: Promise<typeof mongoose> | null = null;
+
+export async function getDb(): Promise<typeof mongoose | null> {
   const uri = getMongoUri();
   if (!uri) return null;
 
-  if (!clientPromise) {
-    client = new MongoClient(uri);
-    clientPromise = client.connect();
+  if (!connectionPromise) {
+    connectionPromise = mongoose.connect(uri, {
+      dbName: 'hypertype',
+    });
   }
 
-  const connected = await clientPromise;
-  return connected.db();
+  return connectionPromise;
 }
 
-export async function getScoresCollection(): Promise<Collection<LeaderboardItem> | null> {
+export async function getScoreModel() {
   const db = await getDb();
   if (!db) return null;
-  const collection = db.collection<LeaderboardItem>('scores');
-  await collection.createIndexes([
-    { key: { difficulty: 1, language: 1, wpm: -1, createdAt: -1 } },
-    { key: { createdAt: -1 } },
-    { key: { gameId: 1 }, unique: true },
-  ]);
-  return collection;
+  return ScoreModel;
 }

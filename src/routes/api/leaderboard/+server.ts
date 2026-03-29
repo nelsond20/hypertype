@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getScoresCollection } from '$lib/server/db';
+import { getScoreModel } from '$lib/server/db';
 import { memoryLeaderboard } from '$lib/server/memory';
 import { difficulties, languages } from '$lib/shared/types';
 
@@ -31,13 +31,12 @@ export const GET: RequestHandler = async ({ url }) => {
   if (difficulty !== 'all') filter.difficulty = difficulty;
   if (language !== 'all') filter.language = language;
 
-  const collection = await getScoresCollection();
-  let items = collection
-    ? await collection
-        .find(filter)
+  const Score = await getScoreModel();
+  let items = Score
+    ? await Score.find(filter)
         .sort({ wpm: -1, accuracy: -1, createdAt: -1 })
         .limit(100)
-        .toArray()
+        .lean()
     : memoryLeaderboard().filter((score) => {
         return (
           (difficulty === 'all' || score.difficulty === difficulty) &&

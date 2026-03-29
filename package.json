@@ -29,7 +29,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "mongodb": "^6.20.0",
+    "dotenv": "^16.6.1",
+    "mongoose": "^8.18.0",
     "nanoid": "^5.1.5",
     "seedrandom": "^3.0.5",
     "zod": "^4.1.11"

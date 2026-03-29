@@ -66,7 +66,7 @@
     <label class="field">
       <span>Timer</span>
       <select bind:value={settings.durationSeconds} on:change={() => updateSettings({ durationSeconds: settings.durationSeconds })}>
-        <option value={30}>30s</option>
+        <option value={5}>5s</option>
         <option value={45}>45s</option>
         <option value={60}>60s</option>
       </select>

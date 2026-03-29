@@ -1,87 +1,129 @@
 # HyperType
 
-HyperType is a responsive web typing game built with SvelteKit, serverless API routes, and MongoDB.
-It ships with a seeded code corpus, live WPM/accuracy tracking, a public leaderboard, and a
-Vercel-ready deployment setup.
+HyperType is a code-focused typing game built for the browser. Players type seeded code snippets,
+track live performance in real time, and submit runs to a persistent public leaderboard.
 
-## Features
+It was designed as a portfolio-ready MVP: fast gameplay, clean UI, serverless backend, and a stack
+that can ship directly to Vercel.
 
-- Single-player typing loop with difficulty-based code prompts
-- Live WPM, accuracy, error, combo, and timer tracking
-- Persistent leaderboard with pagination and difficulty/language filters
-- Serverless API routes for score submission and leaderboard reads
-- MongoDB persistence with a dev fallback in memory when `MONGODB_URI` is missing
-- Unit tests, e2e smoke test, lint, and production build scripts
+## What It Does
+
+- Turns code snippets into replayable typing sessions
+- Supports multiple languages and difficulty levels
+- Tracks live `WPM`, `accuracy`, `errors`, `combo`, and timer pressure
+- Stores leaderboard entries in MongoDB through SvelteKit API routes
+- Keeps the experience responsive across desktop and mobile
+
+## Core Product
+
+### Game Loop
+
+The typing flow is centered around speed and readability:
+
+- seeded code prompts for reproducible sessions
+- inline error highlighting
+- live WPM and accuracy updates
+- session results with retry and leaderboard submission
+
+### Leaderboard
+
+Runs are stored and ranked by:
+
+- `WPM`
+- `accuracy`
+- `recency`
+
+The board is public, paginated, and filterable by difficulty and language.
+
+### Backend
+
+The backend uses serverless SvelteKit routes with Mongoose. Scores are validated before insert, and
+basic anti-cheat checks reject clearly invalid runs.
 
 ## Stack
 
 - SvelteKit
 - TypeScript
-- MongoDB Node driver
-- Vercel adapter
+- Mongoose
+- MongoDB Atlas
+- Vercel
 - Vitest
 - Playwright
 
-## Setup
+## Local Setup
 
-1. Install dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Create your local environment file:
+Create a local env file:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Add your MongoDB connection string in `.env`:
+Set your MongoDB connection string:
 
 ```bash
 MONGODB_URI="mongodb+srv://..."
 ```
 
-4. Start the app:
+Start development:
 
 ```bash
 npm run dev
 ```
 
-## Scripts
+App URL:
 
-- `npm run dev` - start local development
-- `npm run check` - run Svelte checks
-- `npm run lint` - run Prettier check and Svelte checks
-- `npm run test:unit` - run Vitest unit tests
-- `npm run test:e2e` - run Playwright smoke tests
-- `npm run build` - build for production
+```bash
+http://localhost:5173
+```
 
-## API Routes
+Health check:
+
+```bash
+http://localhost:5173/api/health
+```
+
+## Available Scripts
+
+- `npm run dev` starts the local dev server
+- `npm run check` runs Svelte and TypeScript checks
+- `npm run lint` runs formatting checks and Svelte validation
+- `npm run test:unit` runs Vitest
+- `npm run test:e2e` runs the Playwright smoke test
+- `npm run build` creates the production build
+
+## API Surface
 
 - `GET /api/health`
-- `GET /api/corpus?difficulty=medium&language=typescript&textLength=medium&seed=123`
+- `GET /api/corpus`
 - `POST /api/submit`
-- `GET /api/leaderboard?page=1&pageSize=10&difficulty=all&language=all`
+- `GET /api/leaderboard`
 
 ## Environment Variables
 
-- `MONGODB_URI` - MongoDB Atlas connection string
-- `PUBLIC_APP_ENV` - optional environment label for the client
-- `PUBLIC_DEFAULT_DIFFICULTY` - optional default difficulty
-- `PUBLIC_DEFAULT_LANGUAGE` - optional default language
-- `MAX_WPM` - anti-cheat cap for submissions
-- `RATE_LIMIT_PER_HOUR` - optional soft rate limit baseline
+- `MONGODB_URI` MongoDB Atlas connection string
+- `PUBLIC_APP_ENV` optional environment label
+- `PUBLIC_DEFAULT_DIFFICULTY` optional default difficulty
+- `PUBLIC_DEFAULT_LANGUAGE` optional default language
+- `MAX_WPM` max accepted WPM for score validation
+- `RATE_LIMIT_PER_HOUR` reserved baseline for request throttling
 
-## Deploy
+## Deployment
+
+HyperType is configured for Vercel deployment.
 
 1. Push the repository to GitHub.
-2. Connect the repo to Vercel.
-3. Set `MONGODB_URI` and the optional env vars in Vercel.
-4. Deploy the project.
+2. Import the project into Vercel.
+3. Add `MONGODB_URI` in project environment variables.
+4. Deploy.
 
 ## Notes
 
-- Score submissions are validated server-side before they are stored.
-- The leaderboard sorts by WPM, then accuracy, then recency.
-- The code corpus is deterministic for a given seed so a session can be reproduced.
+- The app writes leaderboard data to the `hypertype` database.
+- If MongoDB is missing, the app falls back to in-memory storage for local development.
+- The code corpus is deterministic for a given seed, which makes sessions reproducible.
