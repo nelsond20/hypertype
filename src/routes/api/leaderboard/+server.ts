@@ -2,6 +2,12 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getScoreModel } from '$lib/server/db';
 import { memoryLeaderboard } from '$lib/server/memory';
+import { getNumberEnv } from '$lib/server/env';
+import {
+  enforceRateLimit,
+  getClientIp,
+  requirePersistentStorage,
+} from '$lib/server/security';
 import { difficulties, languages } from '$lib/shared/types';
 
 function parseQuery(url: URL) {
@@ -25,12 +31,19 @@ function parseQuery(url: URL) {
   };
 }
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async (event) => {
+  await enforceRateLimit({
+    key: `leaderboard:${getClientIp(event)}`,
+    limit: getNumberEnv('LEADERBOARD_RATE_LIMIT_PER_HOUR', 240),
+    windowMs: 60 * 60 * 1000,
+  });
+  const { url } = event;
   const { page, pageSize, difficulty, language } = parseQuery(url);
   const filter: Record<string, string> = {};
   if (difficulty !== 'all') filter.difficulty = difficulty;
   if (language !== 'all') filter.language = language;
 
+  await requirePersistentStorage();
   const Score = await getScoreModel();
   let items = Score
     ? await Score.find(filter)

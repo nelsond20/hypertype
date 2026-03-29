@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { getServerEnv } from './env';
+import { getServerEnv, isProductionEnv } from './env';
 import { ScoreModel } from './score.model';
 
 function getMongoUri() {
@@ -10,7 +10,12 @@ let connectionPromise: Promise<typeof mongoose> | null = null;
 
 export async function getDb(): Promise<typeof mongoose | null> {
   const uri = getMongoUri();
-  if (!uri) return null;
+  if (!uri) {
+    if (isProductionEnv()) {
+      throw new Error('MONGODB_URI is required in production');
+    }
+    return null;
+  }
 
   if (!connectionPromise) {
     connectionPromise = mongoose.connect(uri, {

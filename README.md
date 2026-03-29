@@ -111,7 +111,8 @@ http://localhost:5173/api/health
 - `PUBLIC_DEFAULT_DIFFICULTY` optional default difficulty
 - `PUBLIC_DEFAULT_LANGUAGE` optional default language
 - `MAX_WPM` max accepted WPM for score validation
-- `RATE_LIMIT_PER_HOUR` reserved baseline for request throttling
+- `RATE_LIMIT_PER_HOUR` max score submissions per IP per hour
+- `LEADERBOARD_RATE_LIMIT_PER_HOUR` max leaderboard reads per IP per hour
 
 ## Deployment
 
@@ -127,3 +128,4 @@ HyperType is configured for Vercel deployment.
 - The app writes leaderboard data to the `hypertype` database.
 - If MongoDB is missing, the app falls back to in-memory storage for local development.
 - The code corpus is deterministic for a given seed, which makes sessions reproducible.
+- In production, score submissions fail closed if persistent storage is unavailable.
