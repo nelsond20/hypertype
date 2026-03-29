@@ -9,7 +9,7 @@
     defaultPreferences,
     savePreferences,
   } from '$lib/application/preferences/local-game-preferences';
-  import { generateCorpusText } from '$lib/domain/game/corpus';
+  import { getCorpusText } from '$lib/application/game/get-corpus-text';
   import {
     calculateAccuracy,
     calculateWpm,
@@ -23,9 +23,18 @@
 
   export let settings: GameSettings = defaultPreferences;
 
+  function buildPrompt(nextSettings: GameSettings, seed: number) {
+    return getCorpusText({
+      difficulty: nextSettings.difficulty,
+      language: nextSettings.language,
+      textLength: nextSettings.textLength,
+      seed,
+    }).text;
+  }
+
   let seeded = Math.floor(Math.random() * 1_000_000_000);
   let gameId = nanoid();
-  let prompt = '';
+  let prompt = buildPrompt(settings, seeded);
   let typed = '';
   let previousTyped = '';
   let startedAt = 0;
@@ -40,23 +49,83 @@
   let combo = 0;
   let bestCombo = 0;
   let submittedAt: string | null = null;
-  let inputEl: HTMLTextAreaElement | null = null;
   let error = '';
   let clock = Date.now();
   let correctChars = 0;
+  let isCaptureActive = false;
+
+  function focusCapture() {
+    isCaptureActive = true;
+  }
+
+  function applyVirtualKey(key: string) {
+    if (finished) return;
+    const previous = typed;
+    let current = typed;
+
+    if (key === 'Backspace') {
+      current = current.slice(0, -1);
+    } else if (key === 'Enter') {
+      current = `${current}\n`;
+    } else if (key.length === 1) {
+      current = `${current}${key}`;
+    } else {
+      return;
+    }
+
+    onTypingInput(previous, current.slice(0, prompt.length));
+  }
+
+  function onGlobalKeydown(event: KeyboardEvent) {
+    if (finished || event.defaultPrevented) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target;
+    const isEditableTarget =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLElement && target.isContentEditable);
+
+    if (isEditableTarget) return;
+
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      focusCapture();
+      return;
+    }
+
+    if (!isCaptureActive) {
+      if (event.key === 'Backspace' || event.key === 'Enter' || event.key.length === 1) {
+        event.preventDefault();
+        focusCapture();
+        applyVirtualKey(event.key);
+      }
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      isCaptureActive = false;
+      return;
+    }
+
+    if (event.key === 'Backspace' || event.key === 'Enter' || event.key.length === 1) {
+      event.preventDefault();
+      applyVirtualKey(event.key);
+    }
+  }
+
+  function onPromptAreaKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || (event.key === ' ' && !isCaptureActive)) {
+      event.preventDefault();
+      focusCapture();
+    }
+  }
 
   function resetGame(nextSettings = settings) {
     settings = nextSettings;
     savePreferences(settings);
     seeded = Math.floor(Math.random() * 1_000_000_000);
     gameId = nanoid();
-    const generated = generateCorpusText({
-      difficulty: settings.difficulty,
-      language: settings.language,
-      seed: seeded,
-      textLength: settings.textLength
-    });
-    prompt = generated.text;
+    prompt = buildPrompt(settings, seeded);
     typed = '';
     previousTyped = '';
     startedAt = 0;
@@ -66,16 +135,13 @@
     shareOpen = false;
     message = '';
     error = '';
+    isCaptureActive = false;
     rawEvents = [];
     backspaces = 0;
     combo = 0;
     bestCombo = 0;
     submittedAt = null;
     clock = Date.now();
-    if (inputEl) {
-      inputEl.value = '';
-      inputEl.focus();
-    }
   }
 
   function startTimer() {
@@ -108,23 +174,21 @@
     return count;
   }
 
-  function onTypingInput() {
+  function onTypingInput(previous = typed, current = typed) {
     if (finished) return;
     if (!startedAt) startTimer();
-
-    const current = inputEl?.value ?? '';
     const now = Date.now();
-    const isDeletion = current.length < previousTyped.length;
-    const added = current.length > previousTyped.length ? current.slice(previousTyped.length) : '';
+    const isDeletion = current.length < previous.length;
+    const added = current.length > previous.length ? current.slice(previous.length) : '';
 
     if (isDeletion) {
-      backspaces += previousTyped.length - current.length;
+      backspaces += previous.length - current.length;
       combo = 0;
       rawEvents.push({ key: 'Backspace', ts: now, type: 'backspace' });
     } else if (added) {
       for (const [index, key] of [...added].entries()) {
         rawEvents.push({ key, ts: now, type: 'input' });
-        const promptIndex = previousTyped.length + index;
+        const promptIndex = previous.length + index;
         if (key === prompt[promptIndex]) {
           combo += 1;
           bestCombo = Math.max(bestCombo, combo);
@@ -135,7 +199,7 @@
     }
 
     typed = current.slice(0, prompt.length);
-    previousTyped = current;
+    previousTyped = typed;
     clock = now;
     if (typed === prompt || timeLeft === 0) {
       finish();
@@ -218,7 +282,7 @@
 
   function retry() {
     resetGame(settings);
-    if (inputEl) inputEl.focus();
+    focusCapture();
   }
 
   async function shareResult() {
@@ -257,10 +321,22 @@
       }
     }
     resetGame(settings);
-    const handler = () => inputEl?.focus();
+    const handler = () => {
+      if (isCaptureActive) {
+        focusCapture();
+      }
+    };
     window.addEventListener('pointerdown', handler);
-    return () => window.removeEventListener('pointerdown', handler);
+    window.addEventListener('keydown', onGlobalKeydown);
+    return () => {
+      window.removeEventListener('pointerdown', handler);
+      window.removeEventListener('keydown', onGlobalKeydown);
+    };
   });
+
+  $: if (!prompt) {
+    prompt = buildPrompt(settings, seeded);
+  }
 
   onDestroy(() => stopTimer());
 </script>
@@ -268,19 +344,28 @@
 <div class="game-grid">
   <div class="stack">
     <StatsBar wpm={liveWpm} accuracy={liveAccuracy} {timeLeft} {combo} {progress} />
-    <TextDisplay target={prompt} {typed} />
-    <textarea
-      bind:this={inputEl}
-      aria-label="Type the code shown above"
-      class="capture"
-      autocapitalize="off"
-      autocomplete="off"
-      spellcheck="false"
-      rows="8"
-      on:input={onTypingInput}
-      placeholder="Start typing..."></textarea>
+    <div
+      class:ready={isCaptureActive}
+      class="prompt-area"
+      role="button"
+      tabindex="0"
+      aria-label="Focus the typing area"
+      on:click={focusCapture}
+      on:keydown={onPromptAreaKeydown}>
+      <div class="capture-status">
+        <strong>{isCaptureActive ? 'Keyboard ready' : 'Press any key or click here to start typing'}</strong>
+        <span class="subtle">
+          {isCaptureActive
+            ? 'Your keystrokes are being captured now. Press Esc to pause.'
+            : 'The first key will arm the session and start the timer.'}
+        </span>
+      </div>
+      <TextDisplay target={prompt} {typed} />
+    </div>
     <div class="actions">
-      <button class="button primary" type="button" on:click={() => inputEl?.focus()}>Focus typing area</button>
+      <button class="button primary" type="button" on:click={focusCapture}>
+        {isCaptureActive ? 'Typing active' : 'Start typing'}
+      </button>
       <button class="button ghost" type="button" on:click={retry}>Retry</button>
       <button class="button ghost" type="button" on:click={shareResult} disabled={!finished}>Share</button>
     </div>
@@ -342,12 +427,33 @@
     gap: 1rem;
   }
 
-  .capture {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+  .prompt-area {
+    display: grid;
+    gap: 0.8rem;
+    border-radius: var(--radius);
+    outline: none;
+  }
+
+  .prompt-area:focus-visible {
+    box-shadow: 0 0 0 2px rgba(115, 224, 196, 0.45);
+  }
+
+  .capture-status {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border: 1px dashed rgba(159, 176, 204, 0.32);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .prompt-area.ready .capture-status {
+    border-color: rgba(115, 224, 196, 0.45);
+    background: rgba(115, 224, 196, 0.08);
+  }
+
+  .capture-status strong {
+    font-size: 0.95rem;
   }
 
   .actions,
