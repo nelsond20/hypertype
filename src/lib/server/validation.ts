@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { detectImpossibleRawEvents } from '$lib/shared/scoring';
+import { getServerEnv } from '$lib/server/env';
 import { difficulties, languages } from '$lib/shared/types';
 
 export const submitSchema = z.object({
@@ -40,7 +41,7 @@ export function validateScorePayload(payload: unknown) {
     return { ok: false as const, error: 'Keystrokes mismatch' };
   }
 
-  const maxWpm = Number(process.env.MAX_WPM ?? 300);
+  const maxWpm = Number(getServerEnv('MAX_WPM') ?? 300);
   if (data.wpm > maxWpm) {
     return { ok: false as const, error: 'WPM too high' };
   }
