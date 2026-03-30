@@ -25,14 +25,16 @@
         Practice against real code snippets, track live WPM and accuracy, and submit scores to a
         persistent leaderboard powered by MongoDB.
       </p>
-      <div class="cta">
-        <a class="button primary" href="/play">Play now</a>
-        <a class="button ghost" href="/leaderboard">View leaderboard</a>
+      <div class="cta-wrap">
+        <div class="cta">
+          <a class="button primary play-now" href="/play">Play now</a>
+          <a class="button ghost" href="/leaderboard">View leaderboard</a>
+        </div>
+        <p class="cta-note mono">Start a run in one click with your saved settings.</p>
       </div>
       <ul class="meta mono">
         <li>single-player MVP</li>
         <li>difficulty-based code corpus</li>
-        <li>Vercel ready</li>
       </ul>
     </div>
 
@@ -89,14 +91,6 @@
   </div>
 </section>
 
-<section class="shell final">
-  <div>
-    <p class="eyebrow mono">Next step</p>
-    <h2>Open the game and start typing.</h2>
-  </div>
-  <a class="button primary" href="/play">Launch HyperType</a>
-</section>
-
 <style>
   .hero {
     padding: 1.5rem 0 2rem;
@@ -134,11 +128,32 @@
     font-size: 0.8rem;
   }
 
+  .cta-wrap {
+    display: grid;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+    justify-items: start;
+  }
+
   .cta {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  .play-now {
+    padding: 1.1rem 1.7rem;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 18px 40px rgba(115, 224, 196, 0.18);
+  }
+
+  .cta-note {
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
   }
 
   .meta {
@@ -253,30 +268,25 @@
     line-height: 1.7;
   }
 
-  .final {
-    padding: 0 0 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .final h2 {
-    margin: 0.35rem 0 0;
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    letter-spacing: -0.05em;
-  }
-
   @media (max-width: 980px) {
     .hero-grid,
-    .grid,
-    .final {
+    .grid {
       grid-template-columns: 1fr;
       display: grid;
     }
 
     .hero-grid {
       min-height: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .cta {
+      width: 100%;
+    }
+
+    .cta :global(.button) {
+      width: 100%;
     }
   }
 </style>

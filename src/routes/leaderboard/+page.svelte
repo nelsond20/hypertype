@@ -118,6 +118,14 @@
     flex-wrap: wrap;
   }
 
+  .filters .field {
+    min-width: 14rem;
+  }
+
+  .filters .field select {
+    width: 100%;
+  }
+
   .error {
     margin: 0;
     padding: 1rem;
