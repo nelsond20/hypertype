@@ -1,8 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import CustomSelect from '$lib/components/CustomSelect.svelte';
   import LeaderboardTable from '$lib/components/LeaderboardTable.svelte';
   import { difficulties, languages } from '$lib/domain/game/types';
   import type { LeaderboardItem } from '$lib/domain/game/types';
+  type SelectOption = {
+    value: string | number;
+    label: string;
+  };
 
   let rows: LeaderboardItem[] = [];
   let page = 1;
@@ -11,6 +16,13 @@
   let language: 'all' | (typeof languages)[number] = 'all';
   let loading = true;
   let error = '';
+  const difficultyOptions: SelectOption[] = [
+    { value: 'all', label: 'All' },
+    ...difficulties.map((difficulty) => ({
+      value: difficulty,
+      label: difficulty[0]?.toUpperCase() + difficulty.slice(1),
+    })),
+  ];
 
   async function loadData(nextPage = page) {
     loading = true;
@@ -57,12 +69,15 @@
     <div class="filters panel">
       <label class="field">
         <span>Difficulty</span>
-        <select bind:value={difficulty} on:change={() => loadData(1)}>
-          <option value="all">All</option>
-          {#each difficulties as item}
-            <option value={item}>{item}</option>
-          {/each}
-        </select>
+        <CustomSelect
+          value={difficulty}
+          options={difficultyOptions}
+          ariaLabel="Filter leaderboard difficulty"
+          onChange={(next) => {
+            difficulty = next as typeof difficulty;
+            loadData(1);
+          }}
+        />
       </label>
     </div>
   </div>
@@ -122,10 +137,6 @@
 
   .filters .field {
     min-width: 12rem;
-  }
-
-  .filters .field select {
-    width: 100%;
   }
 
   .error {

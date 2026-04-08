@@ -1,6 +1,11 @@
 <script lang="ts">
+  import CustomSelect from './CustomSelect.svelte';
   import Modal from './Modal.svelte';
   import { languages, type Language, type LeaderboardItem } from '$lib/domain/game/types';
+  type SelectOption = {
+    value: string | number;
+    label: string;
+  };
 
   export let rows: LeaderboardItem[] = [];
   export let page = 1;
@@ -27,6 +32,13 @@
     sql: 'SQL',
     go: 'Go'
   };
+  const languageOptions: SelectOption[] = [
+    { value: 'all', label: 'All' },
+    ...languages.map((language) => ({
+      value: language,
+      label: languageDisplayName[language]
+    }))
+  ];
 
   const tierThresholdsByLanguage: Record<Language, Array<{ label: Tier['label']; className: string; minWpm: number; minAcc: number }>> = {
     typescript: [
@@ -124,12 +136,12 @@
       <div class="range-controls">
         <label class="field language-filter">
           <span>Language</span>
-          <select bind:value={selectedLanguage} on:change={() => onLanguageChange(selectedLanguage)}>
-            <option value="all">All</option>
-            {#each languages as item}
-              <option value={item}>{languageDisplayName[item]}</option>
-            {/each}
-          </select>
+          <CustomSelect
+            value={selectedLanguage}
+            options={languageOptions}
+            ariaLabel="Filter leaderboard language"
+            onChange={(next) => onLanguageChange(next as Language | 'all')}
+          />
         </label>
         <button class="button ghost about-ranges" type="button" on:click={() => (rangesOpen = true)}>
           About ranges

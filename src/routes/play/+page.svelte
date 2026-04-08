@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import CustomSelect from '$lib/components/CustomSelect.svelte';
   import Game from '$lib/components/Game.svelte';
   import {
     defaultPreferences,
@@ -7,9 +8,36 @@
     savePreferences,
   } from '$lib/application/preferences/local-game-preferences';
   import type { GameSettings, SessionLength } from '$lib/domain/game/types';
+  type SelectOption = {
+    value: string | number;
+    label: string;
+  };
 
   let settings: GameSettings = defaultPreferences;
   let gameSessionKey = `${settings.difficulty}:${settings.language}:${settings.textLength}:${settings.durationSeconds}`;
+  const difficultyOptions: SelectOption[] = [
+    { value: 'easy', label: 'Easy' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'hard', label: 'Hard' },
+  ];
+  const languageOptions: SelectOption[] = [
+    { value: 'typescript', label: 'TypeScript' },
+    { value: 'javascript', label: 'JavaScript' },
+    { value: 'python', label: 'Python' },
+    { value: 'rust', label: 'Rust' },
+    { value: 'sql', label: 'SQL' },
+    { value: 'go', label: 'Go' },
+  ];
+  const lengthOptions: SelectOption[] = [
+    { value: 'short', label: 'Short' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'long', label: 'Long' },
+  ];
+  const timerOptions: SelectOption[] = [
+    { value: 30, label: '30s' },
+    { value: 45, label: '45s' },
+    { value: 60, label: '60s' },
+  ];
 
   onMount(() => {
     settings = loadPreferences();
@@ -48,59 +76,51 @@
   <div class="controls panel">
     <label class="field">
       <span>Difficulty</span>
-      <select
-        bind:value={settings.difficulty}
-        on:change={() => {
-          updateSettings({ difficulty: settings.difficulty });
+      <CustomSelect
+        value={settings.difficulty}
+        options={difficultyOptions}
+        ariaLabel="Select difficulty"
+        onChange={(next) => {
+          updateSettings({ difficulty: next as GameSettings['difficulty'] });
           refreshGameSession();
-        }}>
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
+        }}
+      />
     </label>
     <label class="field">
       <span>Language</span>
-      <select
-        bind:value={settings.language}
-        on:change={() => {
-          updateSettings({ language: settings.language });
+      <CustomSelect
+        value={settings.language}
+        options={languageOptions}
+        ariaLabel="Select language"
+        onChange={(next) => {
+          updateSettings({ language: next as GameSettings['language'] });
           refreshGameSession();
-        }}>
-        <option value="typescript">TypeScript</option>
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="rust">Rust</option>
-        <option value="sql">SQL</option>
-        <option value="go">Go</option>
-      </select>
+        }}
+      />
     </label>
     <label class="field">
       <span>Length</span>
-      <select
-        bind:value={settings.textLength}
-        on:change={() => {
-          updateSettings({ textLength: settings.textLength });
+      <CustomSelect
+        value={settings.textLength}
+        options={lengthOptions}
+        ariaLabel="Select text length"
+        onChange={(next) => {
+          updateSettings({ textLength: next as GameSettings['textLength'] });
           refreshGameSession();
-        }}>
-        <option value="short">Short</option>
-        <option value="medium">Medium</option>
-        <option value="long">Long</option>
-      </select>
+        }}
+      />
     </label>
     <label class="field">
       <span>Timer</span>
-      <select
-        bind:value={settings.durationSeconds}
-        on:change={(event) => {
-          const value = Number((event.currentTarget as HTMLSelectElement).value) as SessionLength;
-          updateSettings({ durationSeconds: value });
+      <CustomSelect
+        value={settings.durationSeconds}
+        options={timerOptions}
+        ariaLabel="Select timer length"
+        onChange={(next) => {
+          updateSettings({ durationSeconds: Number(next) as SessionLength });
           refreshGameSession();
-        }}>
-        <option value={30}>30s</option>
-        <option value={45}>45s</option>
-        <option value={60}>60s</option>
-      </select>
+        }}
+      />
     </label>
     <label class="field">
       <span>Player name</span>

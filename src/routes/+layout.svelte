@@ -23,7 +23,7 @@
       <a class:active={$page.url.pathname === '/home'} href="/home">Home</a>
       <a class:active={$page.url.pathname === '/play'} href="/play">Play</a>
       <a class:active={$page.url.pathname === '/leaderboard'} href="/leaderboard">Leaderboard</a>
-      <a class:active={$page.url.pathname === '/settings'} href="/settings">Settings</a>
+      <!-- <a class:active={$page.url.pathname === '/settings'} href="/settings">Settings</a> -->
     </nav>
   </header>
   <main>
