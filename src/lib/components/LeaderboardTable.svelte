@@ -8,6 +8,18 @@
   export let loading = false;
 
   const skeletonRows = Array.from({ length: 6 });
+  const languageBadgeByLanguage: Record<string, string> = {
+    typescript: 'lang-typescript',
+    javascript: 'lang-javascript',
+    python: 'lang-python',
+    rust: 'lang-rust',
+    sql: 'lang-sql',
+    go: 'lang-go'
+  };
+
+  function getLanguageBadgeClass(language: string) {
+    return languageBadgeByLanguage[language] ?? 'lang-default';
+  }
 </script>
 
 <section class="leaderboard panel">
@@ -29,7 +41,8 @@
       <span>Player</span>
       <span>WPM</span>
       <span>Accuracy</span>
-      <span>Mode</span>
+      <span>Difficulty</span>
+      <span>Language</span>
       <span>When</span>
     </div>
 
@@ -41,7 +54,8 @@
             <span class="sk sk-player"></span>
             <span class="sk sk-wpm"></span>
             <span class="sk sk-acc"></span>
-            <span class="sk sk-mode"></span>
+            <span class="sk sk-difficulty"></span>
+            <span class="sk sk-language"></span>
             <span class="sk sk-when"></span>
           </div>
         {/each}
@@ -55,7 +69,10 @@
           <span>{row.userName}</span>
           <span class="mono">{row.wpm.toFixed(1)}</span>
           <span class="mono">{row.accuracy.toFixed(1)}%</span>
-          <span>{row.difficulty} / {row.language}</span>
+          <span>{row.difficulty}</span>
+          <span>
+            <span class={`language-badge ${getLanguageBadgeClass(row.language)}`}>{row.language}</span>
+          </span>
           <span class="subtle">{new Date(row.createdAt ?? Date.now()).toLocaleDateString()}</span>
         </div>
       {/each}
@@ -102,7 +119,7 @@
 
   .row {
     display: grid;
-    grid-template-columns: 0.55fr 1.2fr 0.7fr 0.85fr 1fr 0.8fr;
+    grid-template-columns: 0.55fr 1.1fr 0.7fr 0.85fr 0.9fr 0.95fr 0.8fr;
     gap: 0.75rem;
     align-items: center;
     padding: 0.75rem 0.25rem;
@@ -128,7 +145,7 @@
 
   .skeleton-row {
     display: grid;
-    grid-template-columns: 0.55fr 1.2fr 0.7fr 0.85fr 1fr 0.8fr;
+    grid-template-columns: 0.55fr 1.1fr 0.7fr 0.85fr 0.9fr 0.95fr 0.8fr;
     gap: 0.75rem;
     align-items: center;
     padding: 0.75rem 0.25rem;
@@ -161,11 +178,69 @@
   .sk-acc {
     width: 72%;
   }
-  .sk-mode {
+  .sk-difficulty {
     width: 92%;
+  }
+  .sk-language {
+    width: 82%;
   }
   .sk-when {
     width: 70%;
+  }
+
+  .language-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.22rem 0.52rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid transparent;
+    font-family: var(--mono);
+  }
+
+  .lang-typescript {
+    background: rgba(49, 120, 198, 0.22);
+    border-color: rgba(49, 120, 198, 0.55);
+    color: #9eccff;
+  }
+
+  .lang-javascript {
+    background: rgba(247, 223, 30, 0.18);
+    border-color: rgba(247, 223, 30, 0.48);
+    color: #ffe88a;
+  }
+
+  .lang-python {
+    background: rgba(53, 114, 165, 0.2);
+    border-color: rgba(255, 212, 59, 0.44);
+    color: #c0d9ff;
+  }
+
+  .lang-rust {
+    background: rgba(206, 111, 54, 0.2);
+    border-color: rgba(206, 111, 54, 0.5);
+    color: #ffc8a4;
+  }
+
+  .lang-sql {
+    background: rgba(75, 197, 173, 0.18);
+    border-color: rgba(75, 197, 173, 0.46);
+    color: #9ef1de;
+  }
+
+  .lang-go {
+    background: rgba(0, 173, 216, 0.18);
+    border-color: rgba(0, 173, 216, 0.45);
+    color: #a8f0ff;
+  }
+
+  .lang-default {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: var(--text);
   }
 
   @keyframes shimmer {

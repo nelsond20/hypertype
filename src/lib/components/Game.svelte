@@ -47,6 +47,7 @@
   let consentChecked = false;
   let message = '';
   let rawEvents: RawKeyEvent[] = [];
+  let finalScore: ScoreRecord | null = null;
   let backspaces = 0;
   let combo = 0;
   let bestCombo = 0;
@@ -163,6 +164,7 @@
     consentChecked = false;
     message = '';
     error = '';
+    finalScore = null;
     isCaptureActive = false;
     invalidInput = false;
     rawEvents = [];
@@ -244,7 +246,7 @@
     const correctChars = prefixMatches(typed, prompt);
     const keystrokes = typed.length + backspaces;
     const wrongChars = Math.max(0, keystrokes - correctChars);
-    const score = {
+    const score: ScoreRecord = {
       gameId,
       userName: settings.playerName || 'Guest123',
       durationMs: elapsedMs,
@@ -256,6 +258,7 @@
       seed: seeded,
       ...deriveScore({ correctChars, keystrokes, durationMs: elapsedMs })
     };
+    finalScore = score;
     submittedAt = new Date().toISOString();
     if (browser) {
       sessionStorage.setItem('hypertype:lastScore', JSON.stringify({ ...score, prompt }));
@@ -264,24 +267,10 @@
 
   async function submitScore() {
     if (!finished || submitting) return;
+    if (!finalScore) return;
     submitting = true;
     error = '';
-    const payload: ScoreRecord = {
-      gameId,
-      userName: settings.playerName || 'Guest123',
-      durationMs: Math.max(1000, Date.now() - startedAt),
-      correctChars: prefixMatches(typed, prompt),
-      wrongChars: Math.max(0, typed.length + backspaces - prefixMatches(typed, prompt)),
-      keystrokes: typed.length + backspaces,
-      difficulty: settings.difficulty,
-      language: settings.language,
-      seed: seeded,
-      ...deriveScore({
-        correctChars: prefixMatches(typed, prompt),
-        keystrokes: typed.length + backspaces,
-        durationMs: Math.max(1000, Date.now() - startedAt)
-      })
-    };
+    const payload: ScoreRecord = { ...finalScore };
 
     try {
       const response = await fetch('/api/submit', {
@@ -327,7 +316,7 @@
   }
 
   async function shareResult() {
-    const text = `HyperType: ${settings.difficulty} / ${settings.language} - WPM ${liveWpm.toFixed(1)} at ${liveAccuracy.toFixed(1)}% accuracy.`;
+      const text = `HyperType: ${settings.difficulty} / ${settings.language} - WPM ${liveWpm.toFixed(1)} at ${liveAccuracy.toFixed(1)}% accuracy.`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -348,8 +337,12 @@
   let progress = 0;
 
   $: correctChars = prefixMatches(typed, prompt);
-  $: liveWpm = calculateWpm(correctChars, Math.max(1000, startedAt ? clock - startedAt : 1000));
-  $: liveAccuracy = calculateAccuracy(correctChars, Math.max(1, typed.length + backspaces));
+  $: liveWpm = finalScore
+    ? finalScore.wpm
+    : calculateWpm(correctChars, Math.max(1000, startedAt ? clock - startedAt : 1000));
+  $: liveAccuracy = finalScore
+    ? finalScore.accuracy
+    : calculateAccuracy(correctChars, Math.max(1, typed.length + backspaces));
   $: progress = prompt ? correctChars / prompt.length : 0;
 
   onMount(() => {
