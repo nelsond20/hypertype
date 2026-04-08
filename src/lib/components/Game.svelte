@@ -43,6 +43,8 @@
   let finished = false;
   let submitting = false;
   let shareOpen = false;
+  let consentOpen = false;
+  let consentChecked = false;
   let message = '';
   let rawEvents: RawKeyEvent[] = [];
   let backspaces = 0;
@@ -157,6 +159,8 @@
     finished = false;
     submitting = false;
     shareOpen = false;
+    consentOpen = false;
+    consentChecked = false;
     message = '';
     error = '';
     isCaptureActive = false;
@@ -305,6 +309,18 @@
     }
   }
 
+  function openSubmitConsent() {
+    if (!finished || submitting) return;
+    consentChecked = false;
+    consentOpen = true;
+  }
+
+  async function confirmSubmitScore() {
+    if (!consentChecked) return;
+    consentOpen = false;
+    await submitScore();
+  }
+
   function retry() {
     resetGame(settings);
     focusCapture();
@@ -436,9 +452,15 @@
         <strong>{liveWpm.toFixed(1)} WPM</strong>
         <p class="subtle">{liveAccuracy.toFixed(1)}% accuracy</p>
         <div class="buttons">
-      <button class="button primary" type="button" on:click={submitScore} disabled={submitting}>Submit score</button>
+      <button class="button primary" type="button" on:click={openSubmitConsent} disabled={submitting}>Submit score</button>
           <button class="button ghost" type="button" on:click={retry}>Retry</button>
         </div>
+        <p class="legal-note subtle">
+          By submitting, you agree to the
+          <a href="/terms"> Terms of Service</a>,
+          <a href="/privacy"> Privacy Policy</a>,
+          and <a href="/data-processing"> Data Processing Notice</a>.
+        </p>
         {#if message}
           <p class="subtle">{message}</p>
         {/if}
@@ -464,6 +486,28 @@
   <div class="modal-actions">
     <button class="button primary" type="button" on:click={shareResult}>Share</button>
     <button class="button ghost" type="button" on:click={() => (shareOpen = false)}>Close</button>
+  </div>
+</Modal>
+
+<Modal bind:open={consentOpen} title="Consent Required" onClose={() => (consentOpen = false)}>
+  <p class="subtle">
+    Before submitting your score, you must accept the legal terms for data processing and public
+    leaderboard publication.
+  </p>
+  <label class="consent-check">
+    <input type="checkbox" bind:checked={consentChecked} />
+    <span>
+      I agree to the
+      <a href="/terms">Terms of Service</a>,
+      <a href="/privacy">Privacy Policy</a>,
+      and <a href="/data-processing">Data Processing Notice</a>.
+    </span>
+  </label>
+  <div class="modal-actions">
+    <button class="button primary" type="button" on:click={confirmSubmitScore} disabled={!consentChecked || submitting}>
+      {submitting ? 'Submitting...' : 'Accept and submit'}
+    </button>
+    <button class="button ghost" type="button" on:click={() => (consentOpen = false)}>Cancel</button>
   </div>
 </Modal>
 
@@ -629,8 +673,47 @@
     font-family: var(--mono);
   }
 
+  .legal-note {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .legal-note a {
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+  }
+
+  .legal-note a:hover,
+  .legal-note a:focus-visible {
+    border-bottom-color: var(--accent);
+    outline: none;
+  }
+
   .error {
     color: var(--danger);
+  }
+
+  .consent-check {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    margin: 0.8rem 0;
+  }
+
+  .consent-check input {
+    margin-top: 0.2rem;
+  }
+
+  .consent-check a {
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+  }
+
+  .consent-check a:hover,
+  .consent-check a:focus-visible {
+    border-bottom-color: var(--accent);
+    outline: none;
   }
 
   @keyframes shake {
