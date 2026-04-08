@@ -174,3 +174,44 @@ select {
     width: min(100%, calc(100% - 20px));
   }
 }
+
+.legal-page {
+  padding: 0.7rem 0 2rem;
+  display: grid;
+  gap: 0.95rem;
+}
+
+.legal-card {
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.legal-page h1 {
+  margin: 0.2rem 0 0.1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.legal-page h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.legal-page p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.legal-page ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--muted);
+}
+
+.legal-page .meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

@@ -29,11 +29,21 @@
   <main>
     <slot />
   </main>
+  <footer class="site-footer shell">
+    <p class="subtle">HyperType legal</p>
+    <nav aria-label="Legal links">
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+      <a href="/data-processing">Data Processing</a>
+    </nav>
+  </footer>
 </div>
 
 <style>
   .app-frame {
     min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
   }
 
   .topbar {
@@ -104,6 +114,47 @@
     .nav {
       width: 100%;
       justify-content: flex-start;
+    }
+  }
+
+  .site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.8rem 0 1.4rem;
+    border-top: 1px solid var(--line);
+    margin-top: 1.2rem;
+  }
+
+  .site-footer p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  .site-footer nav {
+    display: inline-flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .site-footer a {
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-bottom: 1px solid transparent;
+  }
+
+  .site-footer a:hover,
+  .site-footer a:focus-visible {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    outline: none;
+  }
+
+  @media (max-width: 720px) {
+    .site-footer {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
