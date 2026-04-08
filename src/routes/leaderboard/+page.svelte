@@ -64,15 +64,6 @@
           {/each}
         </select>
       </label>
-      <label class="field">
-        <span>Language</span>
-        <select bind:value={language} on:change={() => loadData(1)}>
-          <option value="all">All</option>
-          {#each languages as item}
-            <option value={item}>{item}</option>
-          {/each}
-        </select>
-      </label>
     </div>
   </div>
 
@@ -80,7 +71,18 @@
     <p class="panel error">{error}</p>
   {/if}
 
-  <LeaderboardTable {rows} {page} {totalPages} {loading} onPageChange={(next) => loadData(next)} />
+  <LeaderboardTable
+    {rows}
+    {page}
+    {totalPages}
+    {loading}
+    selectedLanguage={language}
+    onLanguageChange={(next) => {
+      language = next;
+      loadData(1);
+    }}
+    onPageChange={(next) => loadData(next)}
+  />
 </section>
 
 <style>
@@ -119,7 +121,7 @@
   }
 
   .filters .field {
-    min-width: 14rem;
+    min-width: 12rem;
   }
 
   .filters .field select {
