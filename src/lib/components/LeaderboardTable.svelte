@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Modal from './Modal.svelte';
   import type { LeaderboardItem } from '$lib/domain/game/types';
 
   export let rows: LeaderboardItem[] = [];
@@ -6,6 +7,7 @@
   export let totalPages = 1;
   export let onPageChange: (next: number) => void = () => {};
   export let loading = false;
+  let rangesOpen = false;
 
   const skeletonRows = Array.from({ length: 6 });
   const languageBadgeByLanguage: Record<string, string> = {
@@ -20,6 +22,34 @@
   function getLanguageBadgeClass(language: string) {
     return languageBadgeByLanguage[language] ?? 'lang-default';
   }
+
+  type Tier = {
+    label: 'Bronze' | 'Silver' | 'Oro' | 'Platinum' | 'Diamond';
+    className: string;
+  };
+
+  const tierLegend: Array<{ label: Tier['label']; rule: string; className: string }> = [
+    { label: 'Bronze', rule: 'WPM >= 20 and ACC >= 78%', className: 'tier-bronze' },
+    { label: 'Silver', rule: 'WPM >= 30 and ACC >= 84%', className: 'tier-silver' },
+    { label: 'Oro', rule: 'WPM >= 35 and ACC >= 91%', className: 'tier-gold' },
+    { label: 'Platinum', rule: 'WPM >= 50 and ACC >= 94%', className: 'tier-platinum' },
+    { label: 'Diamond', rule: 'WPM >= 65 and ACC >= 96%', className: 'tier-diamond' }
+  ];
+
+  function getTier(wpm: number, accuracy: number): Tier {
+    if (wpm >= 65 && accuracy >= 96) return { label: 'Diamond', className: 'tier-diamond' };
+    if (wpm >= 50 && accuracy >= 94) return { label: 'Platinum', className: 'tier-platinum' };
+    if (wpm >= 35 && accuracy >= 91) return { label: 'Oro', className: 'tier-gold' };
+    if (wpm >= 30 && accuracy >= 84) return { label: 'Silver', className: 'tier-silver' };
+    return { label: 'Bronze', className: 'tier-bronze' };
+  }
+
+  function isNewTierGroup(index: number) {
+    if (index === 0) return true;
+    const current = getTier(rows[index].wpm, rows[index].accuracy).label;
+    const previous = getTier(rows[index - 1].wpm, rows[index - 1].accuracy).label;
+    return current !== previous;
+  }
 </script>
 
 <section class="leaderboard panel">
@@ -27,6 +57,9 @@
     <div>
       <h2>Leaderboard</h2>
       <p class="subtle">Top scores by difficulty and language.</p>
+      <button class="button ghost about-ranges" type="button" on:click={() => (rangesOpen = true)}>
+        About ranges
+      </button>
     </div>
     <div class="pager">
       <button class="button ghost" type="button" on:click={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1 || loading}>Prev</button>
@@ -64,6 +97,13 @@
 
     <div class:dim={loading} class="data">
       {#each rows as row, index}
+        {@const tier = getTier(row.wpm, row.accuracy)}
+        {#if isNewTierGroup(index)}
+          <div class="tier-separator" role="row">
+            <span class={`tier-badge ${tier.className}`}>{tier.label}</span>
+            <small class="subtle">range group</small>
+          </div>
+        {/if}
         <div class="row" role="row">
           <span class="mono">#{(page - 1) * 10 + index + 1}</span>
           <span>{row.userName}</span>
@@ -83,6 +123,21 @@
   </div>
 </section>
 
+<Modal bind:open={rangesOpen} title="About ranges" onClose={() => (rangesOpen = false)}>
+  <p class="subtle">
+    Ranges are assigned by combining speed and accuracy. A higher WPM only counts if accuracy also
+    meets the threshold.
+  </p>
+  <div class="range-rules">
+    {#each tierLegend as item}
+      <div class="range-rule">
+        <span class={`tier-badge ${item.className}`}>{item.label}</span>
+        <p class="subtle">{item.rule}</p>
+      </div>
+    {/each}
+  </div>
+</Modal>
+
 <style>
   .leaderboard {
     padding: 1rem;
@@ -98,6 +153,12 @@
 
   h2 {
     margin: 0;
+  }
+
+  .about-ranges {
+    margin-top: 0.6rem;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.82rem;
   }
 
   .pager {
@@ -119,7 +180,7 @@
 
   .row {
     display: grid;
-    grid-template-columns: 0.55fr 1.1fr 0.7fr 0.85fr 0.9fr 0.95fr 0.8fr;
+    grid-template-columns: 0.5fr 1.1fr 0.7fr 0.85fr 0.8fr 0.95fr 0.85fr;
     gap: 0.75rem;
     align-items: center;
     padding: 0.75rem 0.25rem;
@@ -138,6 +199,21 @@
     padding: 1rem 0.25rem 0.5rem;
   }
 
+  .tier-separator {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 0.25rem 0.35rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .tier-separator small {
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+  }
+
   .loading-block {
     display: grid;
     gap: 0.5rem;
@@ -145,7 +221,7 @@
 
   .skeleton-row {
     display: grid;
-    grid-template-columns: 0.55fr 1.1fr 0.7fr 0.85fr 0.9fr 0.95fr 0.8fr;
+    grid-template-columns: 0.5fr 1.1fr 0.7fr 0.85fr 0.8fr 0.95fr 0.85fr;
     gap: 0.75rem;
     align-items: center;
     padding: 0.75rem 0.25rem;
@@ -243,6 +319,69 @@
     color: var(--text);
   }
 
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+
+  .tier-bronze {
+    background: rgba(196, 127, 86, 0.2);
+    border-color: rgba(196, 127, 86, 0.48);
+    color: #f3c7aa;
+  }
+
+  .tier-silver {
+    background: rgba(169, 186, 206, 0.2);
+    border-color: rgba(169, 186, 206, 0.5);
+    color: #dde8f6;
+  }
+
+  .tier-gold {
+    background: rgba(245, 201, 83, 0.22);
+    border-color: rgba(245, 201, 83, 0.52);
+    color: #ffe9a5;
+  }
+
+  .tier-platinum {
+    background: rgba(97, 232, 202, 0.2);
+    border-color: rgba(97, 232, 202, 0.5);
+    color: #b3fff0;
+  }
+
+  .tier-diamond {
+    background: rgba(123, 168, 255, 0.2);
+    border-color: rgba(123, 168, 255, 0.5);
+    color: #cde1ff;
+  }
+
+  .range-rules {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0.85rem 0;
+  }
+
+  .range-rule {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .range-rule p {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 0.85rem;
+  }
+
   @keyframes shimmer {
     0% {
       background-position: 0% 0%;
@@ -267,6 +406,11 @@
       display: flex;
       align-items: flex-start;
       flex-direction: column;
+    }
+
+    .range-rule {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
     }
   }
 </style>
