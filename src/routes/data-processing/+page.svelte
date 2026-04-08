@@ -41,7 +41,7 @@
   <article class="panel legal-card">
     <h2>4. Rights Request Workflow</h2>
     <ul>
-      <li>Requests are accepted by email at <a href="mailto:privacy@example.com">privacy@example.com</a>.</li>
+      <li>Requests are accepted by email at <a href="mailto:developer102010@outlook.com">developer102010@outlook.com</a>.</li>
       <li>Request types: access, correction, deletion, restriction, objection, portability, consent withdrawal.</li>
       <li>Verification may be required before action to prevent unauthorized disclosure or deletion.</li>
       <li>Responses are handled within timelines required by applicable law in the requester jurisdiction.</li>
@@ -86,7 +86,7 @@
   <article class="panel legal-card">
     <h2>9. Contact</h2>
     <p class="subtle">
-      Data rights contact: <a href="mailto:privacy@example.com">privacy@example.com</a>
+      Data rights contact: <a href="mailto:developer102010@outlook.com">developer102010@outlook.com</a>
     </p>
   </article>
 </section>

@@ -76,7 +76,7 @@
       You may also have rights related to profiling and non-discrimination.
     </p>
     <p class="subtle">
-      To submit requests, contact: <a href="mailto:privacy@example.com">privacy@example.com</a>
+      To submit requests, contact: <a href="mailto:developer102010@outlook.com">developer102010@outlook.com</a>
     </p>
   </article>
 
@@ -91,7 +91,7 @@
   <article class="panel legal-card">
     <h2>9. Contact</h2>
     <p class="subtle">
-      Privacy contact: <a href="mailto:privacy@example.com">privacy@example.com</a>
+      Privacy contact: <a href="mailto:developer102010@outlook.com">developer102010@outlook.com</a>
     </p>
   </article>
 </section>
