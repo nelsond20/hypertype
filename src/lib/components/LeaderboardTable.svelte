@@ -15,7 +15,7 @@
   const skeletonRows = Array.from({ length: 6 });
 
   type Tier = {
-    label: 'Bronze' | 'Silver' | 'Oro' | 'Platinum' | 'Diamond';
+    label: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
     className: string;
   };
 
@@ -32,42 +32,42 @@
     typescript: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 65, minAcc: 96 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 50, minAcc: 94 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 35, minAcc: 91 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 35, minAcc: 91 },
       { label: 'Silver', className: 'tier-silver', minWpm: 30, minAcc: 84 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
     ],
     javascript: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 64, minAcc: 96 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 49, minAcc: 94 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 34, minAcc: 91 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 34, minAcc: 91 },
       { label: 'Silver', className: 'tier-silver', minWpm: 29, minAcc: 84 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
     ],
     python: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 62, minAcc: 95 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 47, minAcc: 93 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 33, minAcc: 90 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 33, minAcc: 90 },
       { label: 'Silver', className: 'tier-silver', minWpm: 28, minAcc: 83 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 19, minAcc: 77 }
     ],
     rust: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 58, minAcc: 94 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 44, minAcc: 92 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 31, minAcc: 89 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 31, minAcc: 89 },
       { label: 'Silver', className: 'tier-silver', minWpm: 26, minAcc: 82 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 18, minAcc: 76 }
     ],
     sql: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 56, minAcc: 94 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 42, minAcc: 92 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 29, minAcc: 88 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 29, minAcc: 88 },
       { label: 'Silver', className: 'tier-silver', minWpm: 24, minAcc: 81 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 17, minAcc: 75 }
     ],
     go: [
       { label: 'Diamond', className: 'tier-diamond', minWpm: 60, minAcc: 95 },
       { label: 'Platinum', className: 'tier-platinum', minWpm: 45, minAcc: 93 },
-      { label: 'Oro', className: 'tier-gold', minWpm: 32, minAcc: 90 },
+      { label: 'Gold', className: 'tier-gold', minWpm: 32, minAcc: 90 },
       { label: 'Silver', className: 'tier-silver', minWpm: 27, minAcc: 83 },
       { label: 'Bronze', className: 'tier-bronze', minWpm: 18, minAcc: 77 }
     ]
