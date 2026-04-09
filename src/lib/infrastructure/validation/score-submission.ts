@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { detectImpossibleRawEvents } from '$lib/domain/game/scoring';
+import {
+  deriveScore,
+  detectImpossibleRawEvents,
+} from '$lib/domain/game/scoring';
 import { difficulties, languages } from '$lib/domain/game/types';
 import { getNumberEnv } from '$lib/infrastructure/config/env';
 
@@ -51,9 +54,37 @@ export function validateScorePayload(payload: unknown) {
     return { ok: false as const, error: 'Wrong chars mismatch' };
   }
 
+  const expectedWrongChars = Math.max(0, data.keystrokes - data.correctChars);
+  if (data.wrongChars !== expectedWrongChars) {
+    return { ok: false as const, error: 'Wrong chars mismatch' };
+  }
+
+  const maxKeystrokes = getNumberEnv('MAX_KEYSTROKES', 5000);
+  if (data.keystrokes > maxKeystrokes) {
+    return { ok: false as const, error: 'Too many keystrokes' };
+  }
+
+  const maxDurationMs = getNumberEnv('MAX_DURATION_MS', 3 * 60 * 1000);
+  if (data.durationMs > maxDurationMs) {
+    return { ok: false as const, error: 'Duration too long' };
+  }
+
+  const derived = deriveScore({
+    correctChars: data.correctChars,
+    keystrokes: data.keystrokes,
+    durationMs: data.durationMs,
+  });
   const maxWpm = getNumberEnv('MAX_WPM', 300);
-  if (data.wpm > maxWpm) {
+  if (derived.wpm > maxWpm) {
     return { ok: false as const, error: 'WPM too high' };
+  }
+
+  if (Math.abs(data.wpm - derived.wpm) > 0.5) {
+    return { ok: false as const, error: 'Score mismatch' };
+  }
+
+  if (Math.abs(data.accuracy - derived.accuracy) > 0.5) {
+    return { ok: false as const, error: 'Score mismatch' };
   }
 
   if (detectImpossibleRawEvents(data.rawEvents, data.durationMs)) {

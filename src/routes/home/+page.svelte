@@ -5,11 +5,6 @@
   seed: 124578,
   textLength: 'medium'
 });`;
-
-  const terminalSnippet = terminalCode
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
 </script>
 
 <svelte:head>
@@ -45,7 +40,7 @@
           <span></span>
           <span></span>
         </div>
-        <pre><code>{@html terminalSnippet}</code></pre>
+        <pre><code>{terminalCode}</code></pre>
         <div class="terminal-footer">
           <div>
             <span class="label">WPM</span>

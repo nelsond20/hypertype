@@ -111,8 +111,13 @@ http://localhost:5173/api/health
 - `PUBLIC_DEFAULT_DIFFICULTY` optional default difficulty
 - `PUBLIC_DEFAULT_LANGUAGE` optional default language
 - `MAX_WPM` max accepted WPM for score validation
+- `MAX_KEYSTROKES` max accepted keystrokes per submitted run
+- `MAX_DURATION_MS` max accepted duration in milliseconds per submitted run
 - `RATE_LIMIT_PER_HOUR` max score submissions per IP per hour
 - `LEADERBOARD_RATE_LIMIT_PER_HOUR` max leaderboard reads per IP per hour
+- `CORPUS_RATE_LIMIT_PER_HOUR` max corpus reads per IP per hour
+- `TRUST_PROXY_HEADERS` set to `true` only when proxy headers are guaranteed to be sanitized
+- `EXPOSE_HEALTH_DETAILS` set to `true` only if health details should be publicly exposed
 
 ## Deployment
 
