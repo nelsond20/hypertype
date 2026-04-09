@@ -8,12 +8,26 @@ import {
 import { listLeaderboard } from '$lib/infrastructure/persistence/score-repository';
 type LeaderboardListItem = Awaited<ReturnType<typeof listLeaderboard>>[number];
 
+function parsePositiveInt(
+  raw: string | null,
+  fallback: number,
+  options: { min: number; max: number },
+) {
+  const parsed = Number(raw ?? fallback);
+  if (!Number.isFinite(parsed)) return fallback;
+  const normalized = Math.trunc(parsed);
+  return Math.min(options.max, Math.max(options.min, normalized));
+}
+
 export function parseLeaderboardFilters(url: URL): LeaderboardFilters {
-  const page = Math.max(1, Number(url.searchParams.get('page') ?? 1));
-  const pageSize = Math.min(
-    25,
-    Math.max(1, Number(url.searchParams.get('pageSize') ?? 10)),
-  );
+  const page = parsePositiveInt(url.searchParams.get('page'), 1, {
+    min: 1,
+    max: 10_000,
+  });
+  const pageSize = parsePositiveInt(url.searchParams.get('pageSize'), 10, {
+    min: 1,
+    max: 25,
+  });
   const difficultyParam = url.searchParams.get('difficulty');
   const languageParam = url.searchParams.get('language');
 
@@ -67,7 +81,9 @@ type RankableScore = {
 function compareScores<T extends RankableScore>(a: T, b: T) {
   if (b.wpm !== a.wpm) return b.wpm - a.wpm;
   if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
-  return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
+  return (
+    new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
+  );
 }
 
 function pickBestPerPlayerAndLanguage<T extends RankableScore>(items: T[]) {

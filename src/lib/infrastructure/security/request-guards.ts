@@ -1,5 +1,10 @@
 import { error, type RequestEvent } from '@sveltejs/kit';
-import { getNumberEnv, isProductionEnv } from '$lib/infrastructure/config/env';
+import { isIP } from 'node:net';
+import {
+  getNumberEnv,
+  getServerEnv,
+  isProductionEnv,
+} from '$lib/infrastructure/config/env';
 import { consumeRateLimit } from '$lib/infrastructure/persistence/rate-limit-repository';
 import { hasPersistentStorage } from '$lib/infrastructure/persistence/score-repository';
 
@@ -8,13 +13,26 @@ export function isProduction() {
 }
 
 export function getClientIp(event: RequestEvent) {
-  const forwardedFor = event.request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0]?.trim() || 'unknown';
+  const direct = event.getClientAddress?.().trim();
+  if (direct && isIP(direct)) {
+    return direct;
   }
 
-  const realIp = event.request.headers.get('x-real-ip');
-  if (realIp) return realIp.trim();
+  const trustProxyHeaders =
+    !isProduction() || getServerEnv('TRUST_PROXY_HEADERS') === 'true';
+  if (trustProxyHeaders) {
+    const forwardedFor = event.request.headers.get('x-forwarded-for');
+    if (forwardedFor) {
+      const candidate = forwardedFor
+        .split(',')
+        .map((entry) => entry.trim())
+        .find((entry) => Boolean(entry) && isIP(entry));
+      if (candidate) return candidate;
+    }
+
+    const realIp = event.request.headers.get('x-real-ip')?.trim();
+    if (realIp && isIP(realIp)) return realIp;
+  }
 
   return 'unknown';
 }
@@ -27,11 +45,55 @@ export function enforceJsonRequest(event: RequestEvent) {
 }
 
 export function enforceRequestSize(event: RequestEvent, maxBytes: number) {
-  const contentLength = Number(
-    event.request.headers.get('content-length') ?? '0',
-  );
-  if (contentLength > maxBytes) {
+  const rawLength = event.request.headers.get('content-length');
+  if (!rawLength) return;
+  const contentLength = Number(rawLength);
+  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
     throw error(413, 'Payload too large');
+  }
+}
+
+export async function parseJsonBodyWithLimit(
+  event: RequestEvent,
+  maxBytes: number,
+) {
+  const body = event.request.body;
+  if (!body) {
+    throw error(400, 'Request body required');
+  }
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      throw error(413, 'Payload too large');
+    }
+    chunks.push(value);
+  }
+
+  const merged = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  const raw = new TextDecoder().decode(merged).trim();
+  if (!raw) {
+    throw error(400, 'Request body required');
+  }
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw error(400, 'Invalid JSON payload');
   }
 }
 
@@ -65,8 +127,12 @@ export async function enforceRateLimit(input: {
   fallbackLimit: number;
   windowMs: number;
 }) {
+  const clientIp = getClientIp(input.event);
+  const userAgent = input.event.request.headers.get('user-agent')?.slice(0, 80);
+  const identity =
+    clientIp === 'unknown' ? `unknown:${userAgent ?? 'no-ua'}` : clientIp;
   const result = await consumeRateLimit({
-    key: `${input.scope}:${getClientIp(input.event)}`,
+    key: `${input.scope}:${identity}`,
     limit: getNumberEnv(input.limitEnv, input.fallbackLimit),
     windowMs: input.windowMs,
   });

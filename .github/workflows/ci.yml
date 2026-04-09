@@ -9,6 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Block committed secrets
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Eq '^\.env($|\.)'; then
+            echo "Tracked .env files are not allowed."
+            exit 1
+          fi
+          if git grep -nE 'mongodb\+srv://[^[:space:]'"'"'"]+:[^[:space:]'"'"'"]+@' -- . ':!README.md' ':!.github/workflows/ci.yml'; then
+            echo "Potential MongoDB credentials detected in tracked files."
+            exit 1
+          fi
+          if git grep -n -- '-----BEGIN [A-Z ]*PRIVATE KEY-----' -- . ':!.github/workflows/ci.yml'; then
+            echo "Potential private key detected in tracked files."
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 24

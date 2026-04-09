@@ -6,12 +6,14 @@ import {
   enforceRateLimit,
   enforceRequestSize,
   enforceSameOrigin,
+  parseJsonBodyWithLimit,
 } from '$lib/infrastructure/security/request-guards';
 
 export const POST: RequestHandler = async (event) => {
+  const maxPayloadBytes = 64 * 1024;
   enforceSameOrigin(event);
   enforceJsonRequest(event);
-  enforceRequestSize(event, 64 * 1024);
+  enforceRequestSize(event, maxPayloadBytes);
   await enforceRateLimit({
     event,
     scope: 'submit',
@@ -20,7 +22,7 @@ export const POST: RequestHandler = async (event) => {
     windowMs: 60 * 60 * 1000,
   });
 
-  const payload = await event.request.json().catch(() => null);
+  const payload = await parseJsonBodyWithLimit(event, maxPayloadBytes);
   const result = await submitPublicScore(payload);
   if (!result.ok) {
     return json({ error: result.error }, { status: 400 });

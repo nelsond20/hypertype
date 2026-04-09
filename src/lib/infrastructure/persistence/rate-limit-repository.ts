@@ -11,21 +11,38 @@ export async function consumeRateLimit(input: {
 
   const now = new Date();
   const expiresAt = new Date(now.getTime() + input.windowMs);
-  const existing = await RateLimitModel.findOne({ key: input.key }).lean();
-
-  if (!existing || new Date(existing.expiresAt).getTime() <= now.getTime()) {
-    await RateLimitModel.findOneAndUpdate(
-      { key: input.key },
+  try {
+    const reset = await RateLimitModel.findOneAndUpdate(
+      {
+        key: input.key,
+        $or: [{ expiresAt: { $lte: now } }, { expiresAt: { $exists: false } }],
+      },
       { $set: { count: 1, expiresAt } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-    return { allowed: true as const };
+    ).lean();
+    if (reset) {
+      return { allowed: true as const };
+    }
+  } catch (err) {
+    const maybeMongoError = err as { code?: number };
+    if (maybeMongoError.code !== 11000) {
+      throw err;
+    }
   }
 
-  if (existing.count >= input.limit) {
+  const incremented = await RateLimitModel.findOneAndUpdate(
+    {
+      key: input.key,
+      expiresAt: { $gt: now },
+      count: { $lt: input.limit },
+    },
+    { $inc: { count: 1 } },
+    { new: true },
+  ).lean();
+
+  if (!incremented) {
     return { allowed: false as const };
   }
 
-  await RateLimitModel.updateOne({ key: input.key }, { $inc: { count: 1 } });
   return { allowed: true as const };
 }
