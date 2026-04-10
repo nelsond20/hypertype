@@ -23,6 +23,21 @@
       label: difficulty[0]?.toUpperCase() + difficulty.slice(1),
     })),
   ];
+  const languageDisplayName: Record<(typeof languages)[number], string> = {
+    typescript: 'TypeScript',
+    javascript: 'JavaScript',
+    python: 'Python',
+    rust: 'Rust',
+    sql: 'SQL',
+    go: 'Go',
+  };
+  const languageOptions: SelectOption[] = [
+    { value: 'all', label: 'All' },
+    ...languages.map((currentLanguage) => ({
+      value: currentLanguage,
+      label: languageDisplayName[currentLanguage],
+    })),
+  ];
 
   async function loadData(nextPage = page) {
     loading = true;
@@ -79,6 +94,18 @@
           }}
         />
       </label>
+      <label class="field">
+        <span>Language</span>
+        <CustomSelect
+          value={language}
+          options={languageOptions}
+          ariaLabel="Filter leaderboard language"
+          onChange={(next) => {
+            language = next as typeof language;
+            loadData(1);
+          }}
+        />
+      </label>
     </div>
   </div>
 
@@ -92,26 +119,22 @@
     {totalPages}
     {loading}
     selectedLanguage={language}
-    onLanguageChange={(next) => {
-      language = next;
-      loadData(1);
-    }}
     onPageChange={(next) => loadData(next)}
   />
 </section>
 
 <style>
   .board {
-    padding: 0.5rem 0 2rem;
+    padding: 0.7rem 0 1.6rem;
     display: grid;
-    gap: 1rem;
+    gap: 0.9rem;
   }
 
   .hero {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    align-items: end;
+    align-items: center;
   }
 
   .eyebrow {
@@ -123,20 +146,32 @@
   }
 
   h1 {
-    margin: 0.35rem 0 0.6rem;
-    font-size: clamp(2.2rem, 4vw, 4rem);
-    letter-spacing: -0.05em;
+    margin: 0.4rem 0 0.65rem;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    line-height: 1.24;
+    letter-spacing: -0.025em;
+    font-weight: 700;
   }
 
   .filters {
     display: flex;
     gap: 0.75rem;
-    padding: 1rem;
+    padding: 0.9rem;
     flex-wrap: wrap;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .filters .field {
     min-width: 12rem;
+  }
+
+  .filters .field span {
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
   }
 
   .error {

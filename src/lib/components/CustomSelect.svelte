@@ -228,13 +228,16 @@
   .trigger {
     width: 100%;
     box-sizing: border-box;
-    min-height: 3.25rem;
-    border-radius: 14px;
+    min-height: 2.9rem;
+    border-radius: 10px;
     border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     color: var(--text);
-    padding: 0.9rem 0.95rem;
+    padding: 0.6rem 0.8rem;
     text-align: left;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    letter-spacing: 0.03em;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -292,7 +295,9 @@
     text-align: left;
     border: none;
     border-radius: 10px;
-    padding: 0.58rem 0.62rem;
+    padding: 0.5rem 0.58rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
     color: var(--text);
     background: transparent;
     cursor: pointer;

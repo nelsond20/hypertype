@@ -427,10 +427,9 @@
         </div>
       {/if}
     </div>
-    <div class="actions">
+    <!-- <div class="actions">
       <button class="button ghost" type="button" on:click={retry}>Retry</button>
-      <button class="button ghost" type="button" on:click={shareResult} disabled={!finished}>Share</button>
-    </div>
+    </div> -->
   </div>
 
   <aside class="side panel">
@@ -445,7 +444,8 @@
         <strong>{liveWpm.toFixed(1)} WPM</strong>
         <p class="subtle">{liveAccuracy.toFixed(1)}% accuracy</p>
         <div class="buttons">
-      <button class="button primary" type="button" on:click={openSubmitConsent} disabled={submitting}>Submit score</button>
+          <button class="button primary" type="button" on:click={openSubmitConsent} disabled={submitting}>Submit score</button>
+          <button class="button ghost" type="button" on:click={shareResult} disabled={!finished}>Share</button>
           <button class="button ghost" type="button" on:click={retry}>Retry</button>
         </div>
         <p class="legal-note subtle">
@@ -509,12 +509,12 @@
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
     gap: 1rem;
-    padding: 0.5rem 0 2rem;
+    padding: 0.2rem 0 1.2rem;
   }
 
   .stack {
     display: grid;
-    gap: 1rem;
+    gap: 0.8rem;
   }
 
   .prompt-area {
@@ -631,21 +631,56 @@
     flex-wrap: wrap;
   }
 
+  .actions :global(.button),
+  .buttons :global(.button),
+  .modal-actions :global(.button),
+  .time-up-overlay :global(.button) {
+    min-height: auto;
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-family: var(--mono);
+    letter-spacing: 0.03em;
+  }
+
+  .actions :global(.button.primary),
+  .buttons :global(.button.primary),
+  .modal-actions :global(.button.primary),
+  .time-up-overlay :global(.button.primary) {
+    background: var(--accent);
+    color: #04101e;
+    border-color: transparent;
+  }
+
+  .actions :global(.button.primary:hover),
+  .buttons :global(.button.primary:hover),
+  .modal-actions :global(.button.primary:hover),
+  .time-up-overlay :global(.button.primary:hover) {
+    background: #93ffe5;
+  }
+
   .side {
-    padding: 1.1rem;
+    padding: 1rem;
     align-self: start;
     position: sticky;
     top: 1rem;
+    border-radius: var(--radius-sm);
   }
 
   h3,
   h4 {
-    margin: 0 0 0.8rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.82rem;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
   }
 
   .side p,
   .side ol {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.62rem;
+    font-size: 0.88rem;
   }
 
   .help ol {
@@ -656,13 +691,13 @@
   .result {
     display: grid;
     gap: 0.75rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
     border-top: 1px solid var(--line);
   }
 
   .result strong {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-family: var(--mono);
   }
 
