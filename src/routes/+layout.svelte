@@ -13,7 +13,7 @@
 <div class="app-frame">
   <header class="topbar shell">
     <a class="brand" href="/home">
-      <span class="brand-mark">HT</span>
+      <img class="brand-mark" src="/icon.png" alt="HyperType brand mark" />
       <span>
         <strong>HyperType</strong>
         <small>code typing arena</small>
@@ -63,14 +63,9 @@
   .brand-mark {
     width: 2.8rem;
     height: 2.8rem;
+    display: block;
+    object-fit: contain;
     border-radius: 14px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(145deg, rgba(115, 224, 196, 0.18), rgba(143, 155, 255, 0.2));
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    font-family: var(--mono);
-    font-weight: 700;
-    letter-spacing: 0.08em;
   }
 
   .brand strong,

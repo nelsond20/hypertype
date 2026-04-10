@@ -36,9 +36,9 @@
     <div class="visual panel">
       <div class="terminal">
         <div class="terminal-head">
-          <span></span>
-          <span></span>
-          <span></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
         </div>
         <pre><code>{terminalCode}</code></pre>
         <div class="terminal-footer">
@@ -187,9 +187,17 @@
     margin-bottom: 1rem;
   }
 
-  .terminal-head span {
-    width: 0.7rem;
-    height: 0.7rem;
+  .terminal-head .dot {
+    all: unset;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    min-height: 12px;
+    max-width: 12px;
+    max-height: 12px;
+    aspect-ratio: 1 / 1;
+    flex: 0 0 12px;
+    display: block;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.18);
   }
