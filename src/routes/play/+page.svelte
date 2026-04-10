@@ -135,16 +135,16 @@
 
 <style>
   .play {
-    padding: 0.5rem 0 2rem;
+    padding: 0.7rem 0 1.6rem;
     display: grid;
-    gap: 1rem;
+    gap: 0.9rem;
   }
 
   .header {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    align-items: end;
+    align-items: center;
   }
 
   .eyebrow {
@@ -156,29 +156,39 @@
   }
 
   h1 {
-    margin: 0.35rem 0 0.7rem;
-    font-size: clamp(2rem, 4.5vw, 3.6rem);
-    letter-spacing: -0.05em;
-    max-width: 14ch;
+    margin: 0.4rem 0 0.65rem;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    letter-spacing: -0.025em;
+    line-height: 1.24;
+    max-width: 26ch;
+    font-weight: 700;
   }
 
   .controls {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.75rem;
-    padding: 1rem;
-  }
-
-  .quick {
-    display: flex;
-    gap: 0.6rem;
     padding: 0.9rem;
-    flex-wrap: wrap;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .field span {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     color: var(--muted);
+  }
+
+  .controls .field input {
+    min-height: 2.9rem;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    letter-spacing: 0.03em;
+    background: rgba(255, 255, 255, 0.03);
   }
 
   @media (max-width: 980px) {

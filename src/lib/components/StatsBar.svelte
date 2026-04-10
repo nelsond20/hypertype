@@ -35,21 +35,23 @@
   .stats {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 1rem;
-    padding: 1rem 1.1rem;
+    gap: 0.75rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: var(--radius-sm);
   }
 
   .label {
     display: block;
     color: var(--muted);
-    font-size: 0.78rem;
-    margin-bottom: 0.35rem;
+    font-size: 0.74rem;
+    margin-bottom: 0.25rem;
+    font-family: var(--mono);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
   }
 
   strong {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     font-family: var(--mono);
   }
 
@@ -58,7 +60,7 @@
   }
 
   .track {
-    height: 0.7rem;
+    height: 0.55rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.06);
     overflow: hidden;

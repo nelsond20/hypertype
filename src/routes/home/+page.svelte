@@ -22,8 +22,11 @@
       </p>
       <div class="cta-wrap">
         <div class="cta">
-          <a class="button primary play-now" href="/play">Play now</a>
-          <a class="button ghost" href="/leaderboard">View leaderboard</a>
+          <a class="btn-primary" href="/play">
+            <span>Play now</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn-link" href="/leaderboard">View leaderboard</a>
         </div>
         <p class="cta-note mono">Start a run in one click with your saved settings.</p>
       </div>
@@ -88,7 +91,7 @@
 
 <style>
   .hero {
-    padding: 1.5rem 0 2rem;
+    padding: 0.85rem 0 1.25rem;
   }
 
   .hero-grid {
@@ -96,23 +99,24 @@
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     gap: 1.25rem;
     align-items: center;
-    min-height: calc(100svh - 7rem);
+    min-height: clamp(24rem, 68svh, 36rem);
   }
 
   .copy h1 {
-    font-size: clamp(3rem, 7vw, 6rem);
-    line-height: 0.94;
-    letter-spacing: -0.06em;
-    margin: 0.3rem 0 1rem;
-    max-width: 11ch;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    line-height: 1.24;
+    letter-spacing: -0.025em;
+    margin: 0.4rem 0 1rem;
+    max-width: 28ch;
+    font-weight: 700;
   }
 
   .lede {
-    max-width: 60ch;
-    font-size: 1.08rem;
-    line-height: 1.7;
+    max-width: 52ch;
+    font-size: 0.92rem;
+    line-height: 1.72;
     color: var(--muted);
-    margin: 0 0 1.25rem;
+    margin: 0 0 1.1rem;
   }
 
   .eyebrow {
@@ -137,36 +141,104 @@
     align-items: center;
   }
 
-  .play-now {
-    padding: 1.1rem 1.7rem;
-    font-size: 1rem;
-    font-weight: 700;
-    box-shadow: 0 18px 40px rgba(115, 224, 196, 0.18);
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.95rem 0.55rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.02em;
+    background: var(--accent);
+    color: #04101e;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+      background 140ms ease,
+      transform 130ms ease;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus-visible {
+    background: #93ffe5;
+    transform: translateY(-1px);
+    outline: none;
+  }
+
+  .btn-primary .arrow {
+    display: inline-block;
+    transition: transform 130ms ease;
+  }
+
+  .btn-primary:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.88rem;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 1px;
+  }
+
+  .btn-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--muted);
+    transition: width 180ms ease;
+  }
+
+  .btn-link:hover,
+  .btn-link:focus-visible {
+    color: var(--text);
+    outline: none;
+  }
+
+  .btn-link:hover::after,
+  .btn-link:focus-visible::after {
+    width: 100%;
   }
 
   .cta-note {
     margin: 0;
-    color: var(--accent);
-    letter-spacing: 0.08em;
+    color: var(--muted);
+    letter-spacing: 0.04em;
     font-size: 0.78rem;
   }
 
   .meta {
     display: flex;
-    gap: 0.8rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
     padding: 0;
     margin: 0;
     list-style: none;
-    color: var(--muted);
-    font-size: 0.9rem;
   }
 
   .meta li {
-    padding: 0.45rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+  }
+
+  .meta li::before {
+    content: '// ';
+    color: var(--accent);
+    opacity: 0.65;
   }
 
   .visual {
@@ -243,9 +315,9 @@
   }
 
   .section-copy h2 {
-    margin: 0.3rem 0 0.75rem;
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    letter-spacing: -0.05em;
+    margin: 0.3rem 0 0.65rem;
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    letter-spacing: -0.025em;
   }
 
   .grid {
@@ -256,17 +328,23 @@
 
   .grid article {
     padding: 1rem;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .grid h3 {
-    margin: 0 0 0.55rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
   }
 
   .grid p {
     margin: 0;
+    font-size: 0.88rem;
     color: var(--muted);
     line-height: 1.7;
   }

@@ -80,15 +80,15 @@
       </h2>
       <p class="subtle">Top scores grouped by performance range.</p>
       <div class="range-controls">
-        <button class="button ghost about-ranges" type="button" on:click={() => (rangesOpen = true)}>
+        <button class="button ghost about-ranges btn-link-btn" type="button" on:click={() => (rangesOpen = true)}>
           About ranges
         </button>
       </div>
     </div>
     <div class="pager">
-      <button class="button ghost" type="button" on:click={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1 || loading}>Prev</button>
+      <button class="button ghost nav-btn" type="button" on:click={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1 || loading}>Prev</button>
       <span class="mono">Page {page} / {totalPages}</span>
-      <button class="button ghost" type="button" on:click={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page >= totalPages || loading}>Next</button>
+      <button class="button ghost nav-btn" type="button" on:click={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page >= totalPages || loading}>Next</button>
     </div>
   </div>
 
@@ -115,30 +115,30 @@
           </div>
         {/each}
       </div>
-    {/if}
-
-    <div class:dim={loading} class="data">
-      {#each rows as row, index}
-        {@const tier = getTier(row.wpm, row.accuracy)}
-        {#if isNewTierGroup(index)}
-          <div class="tier-separator" role="row">
-            <span class={`tier-badge ${tier.className}`}>{tier.label}</span>
-            <small class="subtle">range group</small>
+    {:else}
+      <div class="data">
+        {#each rows as row, index}
+          {@const tier = getTier(row.wpm, row.accuracy)}
+          {#if isNewTierGroup(index)}
+            <div class="tier-separator" role="row">
+              <span class={`tier-badge ${tier.className}`}>{tier.label}</span>
+              <small class="subtle">range group</small>
+            </div>
+          {/if}
+          <div class="row" role="row">
+            <span class="mono">#{(page - 1) * 10 + index + 1}</span>
+            <span>{row.userName}</span>
+            <span class="mono">{row.wpm.toFixed(1)}</span>
+            <span class="mono">{row.accuracy.toFixed(1)}%</span>
+            <span>{row.difficulty}</span>
+            <span class="subtle">{new Date(row.createdAt ?? Date.now()).toLocaleDateString()}</span>
           </div>
+        {/each}
+        {#if rows.length === 0}
+          <p class="empty subtle">No scores yet. Be the first on this board.</p>
         {/if}
-        <div class="row" role="row">
-          <span class="mono">#{(page - 1) * 10 + index + 1}</span>
-          <span>{row.userName}</span>
-          <span class="mono">{row.wpm.toFixed(1)}</span>
-          <span class="mono">{row.accuracy.toFixed(1)}%</span>
-          <span>{row.difficulty}</span>
-          <span class="subtle">{new Date(row.createdAt ?? Date.now()).toLocaleDateString()}</span>
-        </div>
-      {/each}
-      {#if !loading && rows.length === 0}
-        <p class="empty subtle">No scores yet. Be the first on this board.</p>
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
 </section>
 
@@ -158,7 +158,8 @@
 
 <style>
   .leaderboard {
-    padding: 1.35rem;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
   }
 
   .head {
@@ -171,6 +172,8 @@
 
   h2 {
     margin: 0;
+    font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+    letter-spacing: -0.01em;
   }
 
   .language-tone {
@@ -208,7 +211,7 @@
   }
 
   .range-controls {
-    margin-top: 0.6rem;
+    margin-top: 0.5rem;
     display: flex;
     gap: 0.75rem;
     align-items: end;
@@ -216,10 +219,25 @@
   }
 
   .about-ranges {
-    min-height: 3.25rem;
+    min-height: auto;
     margin-top: 0;
-    padding: 0.9rem 1rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--muted);
     font-size: 0.82rem;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+  }
+
+  .about-ranges:hover,
+  .about-ranges:focus-visible {
+    color: var(--text);
+    border-bottom-color: var(--muted);
+    outline: none;
+    transform: none;
   }
 
   .pager {
@@ -232,13 +250,24 @@
     align-self: flex-start;
   }
 
+  .pager .mono {
+    font-size: 0.82rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-btn {
+    min-height: auto;
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    letter-spacing: 0.03em;
+  }
+
   .table {
     display: grid;
     gap: 0.5rem;
-  }
-
-  .data.dim {
-    opacity: 0.72;
   }
 
   .row {
@@ -246,8 +275,9 @@
     grid-template-columns: 0.5fr 1.2fr 0.75fr 0.9fr 0.9fr 0.9fr;
     gap: 0.75rem;
     align-items: center;
-    padding: 0.75rem 0.25rem;
+    padding: 0.68rem 0.2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.92rem;
   }
 
   .head-row {
