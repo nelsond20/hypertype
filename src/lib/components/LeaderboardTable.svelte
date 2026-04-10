@@ -1,21 +1,14 @@
 <script lang="ts">
-  import CustomSelect from './CustomSelect.svelte';
   import Modal from './Modal.svelte';
-  import { languages, type Language, type LeaderboardItem } from '$lib/domain/game/types';
-  type SelectOption = {
-    value: string | number;
-    label: string;
-  };
+  import { type Language, type LeaderboardItem } from '$lib/domain/game/types';
 
   export let rows: LeaderboardItem[] = [];
   export let page = 1;
   export let totalPages = 1;
   export let onPageChange: (next: number) => void = () => {};
   export let selectedLanguage: Language | 'all' = 'all';
-  export let onLanguageChange: (next: Language | 'all') => void = () => {};
   export let loading = false;
   let rangesOpen = false;
-  let activeRangeLanguages: Language[] = [];
 
   const skeletonRows = Array.from({ length: 6 });
 
@@ -32,62 +25,17 @@
     sql: 'SQL',
     go: 'Go'
   };
-  const languageOptions: SelectOption[] = [
-    { value: 'all', label: 'All' },
-    ...languages.map((language) => ({
-      value: language,
-      label: languageDisplayName[language]
-    }))
+
+  const tierThresholds: Array<{ label: Tier['label']; className: string; minWpm: number; minAcc: number }> = [
+    { label: 'Diamond', className: 'tier-diamond', minWpm: 65, minAcc: 96 },
+    { label: 'Platinum', className: 'tier-platinum', minWpm: 50, minAcc: 94 },
+    { label: 'Gold', className: 'tier-gold', minWpm: 35, minAcc: 91 },
+    { label: 'Silver', className: 'tier-silver', minWpm: 30, minAcc: 84 },
+    { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
   ];
 
-  const tierThresholdsByLanguage: Record<Language, Array<{ label: Tier['label']; className: string; minWpm: number; minAcc: number }>> = {
-    typescript: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 65, minAcc: 96 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 50, minAcc: 94 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 35, minAcc: 91 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 30, minAcc: 84 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
-    ],
-    javascript: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 64, minAcc: 96 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 49, minAcc: 94 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 34, minAcc: 91 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 29, minAcc: 84 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
-    ],
-    python: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 62, minAcc: 95 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 47, minAcc: 93 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 33, minAcc: 90 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 28, minAcc: 83 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 19, minAcc: 77 }
-    ],
-    rust: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 58, minAcc: 94 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 44, minAcc: 92 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 31, minAcc: 89 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 26, minAcc: 82 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 18, minAcc: 76 }
-    ],
-    sql: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 56, minAcc: 94 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 42, minAcc: 92 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 29, minAcc: 88 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 24, minAcc: 81 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 17, minAcc: 75 }
-    ],
-    go: [
-      { label: 'Diamond', className: 'tier-diamond', minWpm: 60, minAcc: 95 },
-      { label: 'Platinum', className: 'tier-platinum', minWpm: 45, minAcc: 93 },
-      { label: 'Gold', className: 'tier-gold', minWpm: 32, minAcc: 90 },
-      { label: 'Silver', className: 'tier-silver', minWpm: 27, minAcc: 83 },
-      { label: 'Bronze', className: 'tier-bronze', minWpm: 18, minAcc: 77 }
-    ]
-  };
-
-  function getTier(language: Language, wpm: number, accuracy: number): Tier {
-    const thresholds = tierThresholdsByLanguage[language];
-    for (const rule of thresholds) {
+  function getTier(wpm: number, accuracy: number): Tier {
+    for (const rule of tierThresholds) {
       if (wpm >= rule.minWpm && accuracy >= rule.minAcc) {
         return { label: rule.label, className: rule.className };
       }
@@ -97,8 +45,8 @@
 
   function isNewTierGroup(index: number) {
     if (index === 0) return true;
-    const current = getTier(rows[index].language, rows[index].wpm, rows[index].accuracy).label;
-    const previous = getTier(rows[index - 1].language, rows[index - 1].wpm, rows[index - 1].accuracy).label;
+    const current = getTier(rows[index].wpm, rows[index].accuracy).label;
+    const previous = getTier(rows[index - 1].wpm, rows[index - 1].accuracy).label;
     return current !== previous;
   }
 
@@ -112,15 +60,13 @@
     return `tone-${language}`;
   }
 
-  function getRangeRulesForLanguage(language: Language) {
-    return tierThresholdsByLanguage[language].map((rule) => ({
+  function getRangeRules() {
+    return tierThresholds.map((rule) => ({
       label: rule.label,
       className: rule.className,
       rule: `WPM >= ${rule.minWpm} and ACC >= ${rule.minAcc}%`
     }));
   }
-
-  $: activeRangeLanguages = selectedLanguage === 'all' ? [...languages] : [selectedLanguage];
 </script>
 
 <section class="leaderboard panel">
@@ -134,15 +80,6 @@
       </h2>
       <p class="subtle">Top scores grouped by performance range.</p>
       <div class="range-controls">
-        <label class="field language-filter">
-          <span>Language</span>
-          <CustomSelect
-            value={selectedLanguage}
-            options={languageOptions}
-            ariaLabel="Filter leaderboard language"
-            onChange={(next) => onLanguageChange(next as Language | 'all')}
-          />
-        </label>
         <button class="button ghost about-ranges" type="button" on:click={() => (rangesOpen = true)}>
           About ranges
         </button>
@@ -182,7 +119,7 @@
 
     <div class:dim={loading} class="data">
       {#each rows as row, index}
-        {@const tier = getTier(row.language, row.wpm, row.accuracy)}
+        {@const tier = getTier(row.wpm, row.accuracy)}
         {#if isNewTierGroup(index)}
           <div class="tier-separator" role="row">
             <span class={`tier-badge ${tier.className}`}>{tier.label}</span>
@@ -207,18 +144,13 @@
 
 <Modal bind:open={rangesOpen} title="About ranges" onClose={() => (rangesOpen = false)}>
   <p class="subtle">
-    Ranges are language-specific. Score tiers combine speed and accuracy per language.
+    Ranges are global. Score tiers use the same WPM and accuracy thresholds for all languages.
   </p>
   <div class="range-rules">
-    {#each activeRangeLanguages as lang}
-      <div class="range-language">
-        <h3>{languageDisplayName[lang]}</h3>
-        {#each getRangeRulesForLanguage(lang) as item}
-          <div class="range-rule">
-            <span class={`tier-badge ${item.className}`}>{item.label}</span>
-            <p class="subtle">{item.rule}</p>
-          </div>
-        {/each}
+    {#each getRangeRules() as item}
+      <div class="range-rule">
+        <span class={`tier-badge ${item.className}`}>{item.label}</span>
+        <p class="subtle">{item.rule}</p>
       </div>
     {/each}
   </div>
@@ -281,15 +213,6 @@
     gap: 0.75rem;
     align-items: end;
     flex-wrap: wrap;
-  }
-
-  .language-filter {
-    min-width: 13rem;
-  }
-
-  .language-filter span {
-    font-size: 0.8rem;
-    color: var(--muted);
   }
 
   .about-ranges {
@@ -451,19 +374,6 @@
     margin: 0.85rem 0;
   }
 
-  .range-language {
-    display: grid;
-    gap: 0.45rem;
-    padding-top: 0.45rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-  }
-
-  .range-language h3 {
-    margin: 0;
-    font-size: 0.95rem;
-    letter-spacing: 0.03em;
-  }
-
   .range-rule {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -505,11 +415,6 @@
 
     .range-controls {
       width: 100%;
-    }
-
-    .language-filter {
-      width: 100%;
-      min-width: 0;
     }
 
     .range-rule {

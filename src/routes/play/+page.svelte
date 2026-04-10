@@ -67,10 +67,10 @@
       <h1>Type code. Chase clean runs. Submit a score.</h1>
       <p class="subtle">The text is seeded, the timer is real, and the leaderboard is public.</p>
     </div>
-    <div class="quick panel">
+    <!-- <div class="quick panel">
       <a class="button ghost" href="/settings">Open settings</a>
       <a class="button ghost" href="/leaderboard">Leaderboard</a>
-    </div>
+    </div> -->
   </div>
 
   <div class="controls panel">

@@ -23,6 +23,21 @@
       label: difficulty[0]?.toUpperCase() + difficulty.slice(1),
     })),
   ];
+  const languageDisplayName: Record<(typeof languages)[number], string> = {
+    typescript: 'TypeScript',
+    javascript: 'JavaScript',
+    python: 'Python',
+    rust: 'Rust',
+    sql: 'SQL',
+    go: 'Go',
+  };
+  const languageOptions: SelectOption[] = [
+    { value: 'all', label: 'All' },
+    ...languages.map((currentLanguage) => ({
+      value: currentLanguage,
+      label: languageDisplayName[currentLanguage],
+    })),
+  ];
 
   async function loadData(nextPage = page) {
     loading = true;
@@ -79,6 +94,18 @@
           }}
         />
       </label>
+      <label class="field">
+        <span>Language</span>
+        <CustomSelect
+          value={language}
+          options={languageOptions}
+          ariaLabel="Filter leaderboard language"
+          onChange={(next) => {
+            language = next as typeof language;
+            loadData(1);
+          }}
+        />
+      </label>
     </div>
   </div>
 
@@ -92,10 +119,6 @@
     {totalPages}
     {loading}
     selectedLanguage={language}
-    onLanguageChange={(next) => {
-      language = next;
-      loadData(1);
-    }}
     onPageChange={(next) => loadData(next)}
   />
 </section>
