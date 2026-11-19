@@ -1,49 +1,68 @@
 :root {
   color-scheme: dark;
-  --bg: #07111f;
-  --bg-soft: #0d1a2f;
-  --panel: rgba(10, 18, 33, 0.78);
-  --panel-solid: #0d1728;
-  --line: rgba(183, 208, 255, 0.14);
-  --text: #edf4ff;
-  --muted: #9fb0cc;
-  --accent: #73e0c4;
-  --accent-strong: #8f9bff;
+
+  /* Core palette — taken from the keycap orb so the page and the hero match */
+  --bg: #020206;
+  --ink: #0b0c14;
+  --cobalt: #2633d4;
+  --glow: #1f30ff;
+  --ash: #b3b7c1;
+  --text: #eceef5;
+  --lime: #b6c24a;
   --danger: #ff6b81;
+
+  /* Aliases kept so every component picks up the new look */
+  --bg-soft: #0b0c14;
+  --panel: rgba(11, 12, 20, 0.72);
+  --panel-solid: #0b0c14;
+  --line: rgba(179, 183, 193, 0.13);
+  --line-strong: rgba(179, 183, 193, 0.26);
+  --muted: #8b90a3;
+  --accent: #7b88ff;
+  --accent-strong: var(--cobalt);
+  --success: var(--lime);
   --warning: #ffd26a;
-  --success: #55d39a;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
-  --radius: 22px;
-  --radius-sm: 14px;
-  --mono:
-    'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono',
-    monospace;
-  --sans: 'Avenir Next', 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  --radius: 18px;
+  --radius-sm: 12px;
+
+  --mono: 'JetBrains Mono Variable', 'SFMono-Regular', Menlo, Consolas, monospace;
+  --sans: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
   font-family: var(--sans);
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(115, 224, 196, 0.18),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(143, 155, 255, 0.18),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #050a13, var(--bg) 38%, #050a13 100%);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html,
 body {
   margin: 0;
   min-height: 100%;
-  background: transparent;
+  background: var(--bg);
   color: var(--text);
 }
 
 body {
   min-height: 100svh;
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(60% 38% at 62% 108%, rgba(31, 48, 255, 0.32), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--sans);
+  font-variation-settings: 'wdth' 90;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
 }
 
 a {
@@ -59,17 +78,22 @@ select {
 }
 
 ::selection {
-  background: rgba(115, 224, 196, 0.25);
+  background: rgba(38, 51, 212, 0.55);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .shell {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1200px, calc(100% - 40px));
   margin: 0 auto;
 }
 
 .panel {
   background: var(--panel);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(14px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -83,42 +107,75 @@ select {
   font-family: var(--mono);
 }
 
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+/* A key: raised cap with a visible side wall that sinks when pressed */
+.key,
 .button {
+  --wall: #05060c;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.9rem 1.2rem;
-  background: rgba(255, 255, 255, 0.03);
+  gap: 0.5rem;
+  min-height: 2.9rem;
+  padding: 0.6rem 1.25rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-bottom: 4px solid var(--wall);
+  border-radius: 11px;
+  background: linear-gradient(180deg, #1b1d2d, #12131f);
   color: var(--text);
+  font-weight: 600;
   cursor: pointer;
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
+    transform 90ms ease,
+    border-bottom-width 90ms ease,
     background 160ms ease;
 }
 
-.button:hover,
-.button:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(115, 224, 196, 0.45);
-  background: rgba(115, 224, 196, 0.08);
-  outline: none;
+.key:hover,
+.button:hover {
+  background: linear-gradient(180deg, #23263a, #171929);
 }
 
+.key:active,
+.button:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+.key:disabled,
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.key.primary,
 .button.primary {
-  background: linear-gradient(
-    135deg,
-    rgba(115, 224, 196, 0.18),
-    rgba(143, 155, 255, 0.18)
-  );
-  border-color: rgba(115, 224, 196, 0.35);
+  --wall: #0f1668;
+  background: linear-gradient(180deg, #3441e8, var(--cobalt));
+  border-color: rgba(140, 150, 255, 0.5);
+  color: #fff;
 }
 
+.key.primary:hover,
+.button.primary:hover {
+  background: linear-gradient(180deg, #4552f0, #2e3be0);
+}
+
+.key.ghost,
 .button.ghost {
   background: transparent;
+  border-bottom-width: 1px;
+}
+
+.key.ghost:active,
+.button.ghost:active {
+  transform: none;
 }
 
 .field {
@@ -134,13 +191,12 @@ select {
 .field select,
 .field input {
   width: 100%;
-  box-sizing: border-box;
-  min-height: 3.25rem;
-  border-radius: 14px;
+  min-height: 3rem;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
-  padding: 0.95rem 1rem;
+  padding: 0.85rem 1rem;
 }
 
 .field input {
@@ -163,44 +219,48 @@ select {
   cursor: pointer;
 }
 
-.field select:focus-visible,
-.field input:focus-visible {
-  outline: 2px solid rgba(115, 224, 196, 0.45);
-  outline-offset: 2px;
-}
-
 @media (max-width: 720px) {
   .shell {
-    width: min(100%, calc(100% - 20px));
+    width: calc(100% - 28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
 
 .legal-page {
-  padding: 0.7rem 0 2rem;
+  padding: 2rem 0 3rem;
   display: grid;
-  gap: 0.95rem;
+  gap: 1rem;
+  max-width: 760px;
 }
 
 .legal-card {
-  padding: 1rem;
+  padding: 1.25rem;
   display: grid;
   gap: 0.8rem;
 }
 
 .legal-page h1 {
   margin: 0.2rem 0 0.1rem;
-  font-size: clamp(2rem, 5vw, 3rem);
-  letter-spacing: -0.04em;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
 }
 
 .legal-page h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
 .legal-page p {
   margin: 0;
   line-height: 1.7;
+  max-width: 68ch;
 }
 
 .legal-page ul {

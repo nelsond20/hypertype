@@ -1,4 +1,6 @@
 <script lang="ts">
+  import '@fontsource-variable/bricolage-grotesque';
+  import '@fontsource-variable/jetbrains-mono';
   import '../app.css';
   import { page } from '$app/stores';
 </script>
@@ -16,7 +18,7 @@
       <img class="brand-mark" src="/icon.png" alt="HyperType brand mark" />
       <span>
         <strong>HyperType</strong>
-        <small>code typing arena</small>
+        
       </span>
     </a>
     <nav class="nav">
@@ -51,65 +53,47 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 0 0.75rem;
+    padding: 1rem 0;
+    position: relative;
+    z-index: 5;
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.7rem;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
   }
 
   .brand-mark {
-    width: 2.8rem;
-    height: 2.8rem;
+    width: 2.2rem;
+    height: 2.2rem;
     display: block;
     object-fit: contain;
-    border-radius: 14px;
-  }
-
-  .brand strong,
-  .brand small {
-    display: block;
-  }
-
-  .brand small {
-    color: var(--muted);
-    margin-top: 0.1rem;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
+    border-radius: 10px;
   }
 
   .nav {
     display: inline-flex;
-    gap: 0.45rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    gap: 0.25rem;
   }
 
   .nav a {
-    padding: 0.65rem 0.9rem;
-    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 9px;
     color: var(--muted);
-    border: 1px solid transparent;
+    transition: color 140ms ease;
+  }
+
+  .nav a:hover {
+    color: var(--text);
   }
 
   .nav a.active {
     color: var(--text);
-    border-color: var(--line);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  @media (max-width: 720px) {
-    .topbar {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .nav {
-      width: 100%;
-      justify-content: flex-start;
-    }
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 -2px 0 var(--cobalt);
   }
 
   .site-footer {
@@ -117,9 +101,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.8rem 0 1.4rem;
+    padding: 1.2rem 0 1.6rem;
     border-top: 1px solid var(--line);
-    margin-top: 1.2rem;
+    margin-top: 2rem;
   }
 
   .site-footer p {
@@ -129,24 +113,23 @@
 
   .site-footer nav {
     display: inline-flex;
-    gap: 0.65rem;
+    gap: 1.1rem;
     flex-wrap: wrap;
   }
 
   .site-footer a {
     color: var(--muted);
     font-size: 0.85rem;
-    border-bottom: 1px solid transparent;
   }
 
-  .site-footer a:hover,
-  .site-footer a:focus-visible {
+  .site-footer a:hover {
     color: var(--text);
-    border-bottom-color: var(--accent);
-    outline: none;
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 560px) {
+    .brand span {
+      display: none;
+    }
     .site-footer {
       flex-direction: column;
       align-items: flex-start;
