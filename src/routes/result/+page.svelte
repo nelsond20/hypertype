@@ -23,7 +23,6 @@
 </svelte:head>
 
 <section class="shell result">
-  <p class="eyebrow mono">Session result</p>
   <h1>Run complete</h1>
 
   {#if !ready}
@@ -52,13 +51,6 @@
     gap: 1rem;
   }
 
-  .eyebrow {
-    margin: 0;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.8rem;
-  }
 
   h1 {
     margin: 0;
@@ -77,8 +69,6 @@
     display: block;
     color: var(--muted);
     font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
     margin-bottom: 0.4rem;
   }
 

@@ -3,7 +3,6 @@
 </svelte:head>
 
 <section class="shell legal-page">
-  <p class="eyebrow mono">Legal</p>
   <h1>Terms of Service</h1>
   <p class="meta">Last updated: April 7, 2026</p>
   <p class="subtle">
@@ -98,11 +97,4 @@
 </section>
 
 <style>
-  .eyebrow {
-    margin: 0;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.8rem;
-  }
 </style>

@@ -45,6 +45,7 @@ body {
 }
 
 body {
+  overflow-x: clip;
   min-height: 100svh;
   font-size: 1rem;
   line-height: 1.55;
