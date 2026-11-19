@@ -215,6 +215,21 @@
       0 24px 40px -16px rgba(0, 0, 0, 0.8);
   }
 
+  /* The caps pop up one after another, the winner last. */
+  .step {
+    animation: pop 640ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+  .step.place-3 { animation-delay: 0ms; }
+  .step.place-2 { animation-delay: 110ms; }
+  .step.place-1 { animation-delay: 220ms; }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(46px) scaleY(0.88);
+    }
+  }
+
   .step.place-1 {
     --top: #4d5cf7;
     --bottom: #2633d4;

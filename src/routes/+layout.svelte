@@ -3,6 +3,21 @@
   import '@fontsource-variable/jetbrains-mono';
   import '../app.css';
   import { page } from '$app/stores';
+  import { onNavigate } from '$app/navigation';
+
+  // Route changes run inside a View Transition: the page (`main`) leaves and
+  // arrives while the top bar stays put and the menu pill glides across.
+  onNavigate((navigation) => {
+    if (!document.startViewTransition) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 </script>
 
 <svelte:head>
@@ -22,9 +37,18 @@
       </span>
     </a>
     <nav class="nav">
-      <a class:active={$page.url.pathname === '/home'} href="/home">Home</a>
-      <a class:active={$page.url.pathname === '/play'} href="/play">Play</a>
-      <a class:active={$page.url.pathname === '/leaderboard'} href="/leaderboard">Leaderboard</a>
+      <a class:active={$page.url.pathname === '/home'} href="/home">
+        {#if $page.url.pathname === '/home'}<span class="pill" aria-hidden="true"></span>{/if}
+        <span class="label">Home</span>
+      </a>
+      <a class:active={$page.url.pathname === '/play'} href="/play">
+        {#if $page.url.pathname === '/play'}<span class="pill" aria-hidden="true"></span>{/if}
+        <span class="label">Play</span>
+      </a>
+      <a class:active={$page.url.pathname === '/leaderboard'} href="/leaderboard">
+        {#if $page.url.pathname === '/leaderboard'}<span class="pill" aria-hidden="true"></span>{/if}
+        <span class="label">Leaderboard</span>
+      </a>
       <!-- <a class:active={$page.url.pathname === '/settings'} href="/settings">Settings</a> -->
     </nav>
   </header>
@@ -80,6 +104,7 @@
   }
 
   .nav a {
+    position: relative;
     padding: 0.5rem 0.9rem;
     border-radius: 9px;
     color: var(--muted);
@@ -92,8 +117,28 @@
 
   .nav a.active {
     color: var(--text);
+  }
+
+  .label {
+    position: relative;
+  }
+
+  /* The highlight is its own element so it can travel between links. */
+  .pill {
+    position: absolute;
+    inset: 0;
+    border-radius: 9px;
     background: rgba(255, 255, 255, 0.06);
     box-shadow: inset 0 -2px 0 var(--cobalt);
+    view-transition-name: nav-pill;
+  }
+
+  main {
+    view-transition-name: page;
+  }
+
+  .topbar {
+    view-transition-name: topbar;
   }
 
   .site-footer {

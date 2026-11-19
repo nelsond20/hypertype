@@ -658,12 +658,24 @@
     font-size: 0.92rem;
   }
 
+  .facts dd:nth-of-type(2) { animation-delay: 50ms; }
+  .facts dd:nth-of-type(3) { animation-delay: 100ms; }
+  .facts dd:nth-of-type(4) { animation-delay: 150ms; }
+
+  @keyframes roll {
+    from {
+      opacity: 0;
+      transform: translateY(0.7em);
+    }
+  }
+
   .facts dt {
     color: var(--muted);
   }
 
   .facts dd {
     margin: 0;
+    animation: roll 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     text-align: right;
     font-family: var(--mono);
     overflow: hidden;

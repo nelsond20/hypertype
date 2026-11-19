@@ -87,13 +87,13 @@
       {#each rows as row, index}
         {@const tier = getTier(row.wpm, row.accuracy)}
         {#if startsTier(index)}
-          <li class="tier" style={`--tier:${tier.color}`} aria-hidden="true">
+          <li class="tier" style={`--tier:${tier.color};--n:${index}`} aria-hidden="true">
             <span class="gem"></span>
             <strong>{tier.label}</strong>
             <span class="need">{tier.minWpm}+ WPM and {tier.minAcc}%+ accuracy</span>
           </li>
         {/if}
-        <li class="row" style={`--tier:${tier.color};--fill:${(row.wpm / maxWpm) * 100}%`}>
+        <li class="row" style={`--tier:${tier.color};--fill:${(row.wpm / maxWpm) * 100}%;--n:${index}`}>
           <span class="rank mono">{(page - 1) * PAGE_SIZE + index + 1}</span>
           <span class="who">
             <strong>{row.userName}</strong>
@@ -202,6 +202,32 @@
 
   .tier:first-child {
     margin-top: 0;
+  }
+
+  /* Whenever the list is rebuilt (filter, page) the runs cascade in and the meters fill. */
+  .tier,
+  .row {
+    animation: enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--n, 0) * 34ms);
+  }
+
+  .meter i {
+    transform-origin: left center;
+    animation: fill 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--n, 0) * 34ms + 180ms);
+  }
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+
+  @keyframes fill {
+    from {
+      transform: scaleX(0);
+    }
   }
 
   .tier strong {
@@ -344,9 +370,16 @@
   }
 
   .pg.on {
+    animation: key-down 320ms cubic-bezier(0.3, 1.6, 0.5, 1);
     color: #fff;
     background: linear-gradient(180deg, #4d5cf7, #2633d4);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 0 #121a80;
+  }
+
+  @keyframes key-down {
+    from {
+      transform: translateY(-5px) scale(0.86);
+    }
   }
 
   .pg:disabled:not(.on) {

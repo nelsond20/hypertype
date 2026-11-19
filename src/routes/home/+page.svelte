@@ -78,16 +78,16 @@
 
 <section class="hero shell">
   <div class="copy">
-    <h1>HyperType turns code into a fast, replayable typing arena.</h1>
-    <p class="lede">
+    <h1 style="--i:0">HyperType turns code into a fast, replayable typing arena.</h1>
+    <p class="lede" style="--i:1">
       Type real snippets in six languages, watch your WPM and accuracy move as you go, and put the
       run on a public leaderboard.
     </p>
-    <div class="cta">
+    <div class="cta" style="--i:2">
       <a class="key primary" href="/play">Play now</a>
       <a class="key" href="/leaderboard">See the leaderboard</a>
     </div>
-    <p class="hint subtle">Try it: drag the keys, or click the ball and type.</p>
+    <p class="hint subtle" style="--i:3">Try it: drag the keys, or click the ball and type.</p>
   </div>
 
   <div class="orb-wrap">
@@ -207,6 +207,30 @@
   .hint {
     margin: 1.4rem 0 0;
     font-size: 0.9rem;
+  }
+
+  /* The one entrance on this page: the copy rises in sequence, the ball drops in and settles. */
+  .copy > * {
+    animation: rise 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 80ms + 120ms);
+  }
+
+  .orb-wrap {
+    animation: drop 1300ms cubic-bezier(0.2, 0.9, 0.25, 1) 80ms both;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+    }
+  }
+
+  @keyframes drop {
+    from {
+      opacity: 0;
+      transform: translateY(-36px) scale(0.93);
+    }
   }
 
   /* The orb runs off the right edge of the viewport; its edges fade into the page. */
