@@ -11,11 +11,9 @@
   let rangesOpen = false;
 
   const skeletonRows = Array.from({ length: 6 });
+  const PAGE_SIZE = 10;
 
-  type Tier = {
-    label: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
-    className: string;
-  };
+  type TierLabel = 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
 
   const languageDisplayName: Record<Language, string> = {
     typescript: 'TypeScript',
@@ -26,424 +24,430 @@
     go: 'Go'
   };
 
-  const tierThresholds: Array<{ label: Tier['label']; className: string; minWpm: number; minAcc: number }> = [
-    { label: 'Diamond', className: 'tier-diamond', minWpm: 65, minAcc: 96 },
-    { label: 'Platinum', className: 'tier-platinum', minWpm: 50, minAcc: 94 },
-    { label: 'Gold', className: 'tier-gold', minWpm: 35, minAcc: 91 },
-    { label: 'Silver', className: 'tier-silver', minWpm: 30, minAcc: 84 },
-    { label: 'Bronze', className: 'tier-bronze', minWpm: 20, minAcc: 78 }
+  // Highest first: the first rule a run satisfies is its tier.
+  const tiers: Array<{ label: TierLabel; minWpm: number; minAcc: number; color: string }> = [
+    { label: 'Diamond', minWpm: 65, minAcc: 96, color: '#8fdcff' },
+    { label: 'Platinum', minWpm: 50, minAcc: 94, color: '#aab6ff' },
+    { label: 'Gold', minWpm: 35, minAcc: 91, color: '#f2c45c' },
+    { label: 'Silver', minWpm: 30, minAcc: 84, color: '#c3c7d2' },
+    { label: 'Bronze', minWpm: 20, minAcc: 78, color: '#d58f60' }
   ];
 
-  function getTier(wpm: number, accuracy: number): Tier {
-    for (const rule of tierThresholds) {
-      if (wpm >= rule.minWpm && accuracy >= rule.minAcc) {
-        return { label: rule.label, className: rule.className };
-      }
-    }
-    return { label: 'Bronze', className: 'tier-bronze' };
+  function getTier(wpm: number, accuracy: number) {
+    return tiers.find((t) => wpm >= t.minWpm && accuracy >= t.minAcc) ?? tiers[tiers.length - 1];
   }
 
-  function isNewTierGroup(index: number) {
+  function startsTier(index: number) {
     if (index === 0) return true;
-    const current = getTier(rows[index].wpm, rows[index].accuracy).label;
-    const previous = getTier(rows[index - 1].wpm, rows[index - 1].accuracy).label;
-    return current !== previous;
+    return getTier(rows[index].wpm, rows[index].accuracy).label !== getTier(rows[index - 1].wpm, rows[index - 1].accuracy).label;
   }
 
-  function getBoardTitle(language: Language | 'all') {
-    if (language === 'all') return 'all languages';
-    return languageDisplayName[language];
-  }
+  $: maxWpm = Math.max(1, ...rows.map((r) => r.wpm));
+  $: boardName = selectedLanguage === 'all' ? 'All languages' : languageDisplayName[selectedLanguage];
 
-  function getLanguageToneClass(language: Language | 'all') {
-    if (language === 'all') return 'tone-all';
-    return `tone-${language}`;
-  }
+  // First, last and the pages around the current one; gaps become an ellipsis.
+  $: pageList = (() => {
+    const out: Array<number | '…'> = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) out.push(p);
+      else if (out[out.length - 1] !== '…') out.push('…');
+    }
+    return out;
+  })();
 
-  function getRangeRules() {
-    return tierThresholds.map((rule) => ({
-      label: rule.label,
-      className: rule.className,
-      rule: `WPM >= ${rule.minWpm} and ACC >= ${rule.minAcc}%`
-    }));
-  }
+  const day = (value?: Date | string) =>
+    new Date(value ?? Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 </script>
 
-<section class="leaderboard panel">
-  <div class="head">
+<section class="board panel" aria-label="Leaderboard">
+  <header class="head">
     <div>
-      <h2>
-        Leaderboard of
-        <span class={`language-tone ${getLanguageToneClass(selectedLanguage)}`}>
-          {getBoardTitle(selectedLanguage)}
-        </span>
-      </h2>
-      <p class="subtle">Top scores grouped by performance range.</p>
-      <div class="range-controls">
-        <button class="button ghost about-ranges btn-link-btn" type="button" on:click={() => (rangesOpen = true)}>
-          About ranges
-        </button>
-      </div>
+      <h2>{boardName}</h2>
+      <p class="subtle">Runs are grouped by rank. Each rank needs both speed and accuracy.</p>
     </div>
-    <div class="pager">
-      <button class="button ghost nav-btn" type="button" on:click={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1 || loading}>Prev</button>
-      <span class="mono">Page {page} / {totalPages}</span>
-      <button class="button ghost nav-btn" type="button" on:click={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page >= totalPages || loading}>Next</button>
-    </div>
+    <button class="key ghost sm" type="button" on:click={() => (rangesOpen = true)}>How ranks work</button>
+  </header>
+
+  <div class="cols" aria-hidden="true">
+    <span>#</span><span>Player</span><span class="c-diff">Difficulty</span><span class="c-acc">Accuracy</span><span>Speed</span>
   </div>
 
-  <div class="table" role="table" aria-label="Leaderboard">
-    <div class="row head-row" role="row">
-      <span>Rank</span>
-      <span>Player</span>
-      <span>WPM</span>
-      <span>Accuracy</span>
-      <span>Difficulty</span>
-      <span>When</span>
+  {#if loading}
+    <div class="list" role="status" aria-live="polite" aria-label="Loading leaderboard">
+      {#each skeletonRows as _, index}
+        <div class="row" style={`--delay:${index * 90}ms`}>
+          <span class="sk w-s"></span><span class="sk w-l"></span><span class="sk w-m c-diff"></span><span class="sk w-m c-acc"></span><span class="sk w-l"></span>
+        </div>
+      {/each}
     </div>
-
-    {#if loading}
-      <div class="loading-block" role="status" aria-live="polite" aria-label="Loading leaderboard">
-        {#each skeletonRows as _, index}
-          <div class="skeleton-row" style={`--sk-delay:${index * 90}ms`}>
-            <span class="sk sk-rank"></span>
-            <span class="sk sk-player"></span>
-            <span class="sk sk-wpm"></span>
-            <span class="sk sk-acc"></span>
-            <span class="sk sk-difficulty"></span>
-            <span class="sk sk-when"></span>
-          </div>
-        {/each}
-      </div>
-    {:else}
-      <div class="data">
-        {#each rows as row, index}
-          {@const tier = getTier(row.wpm, row.accuracy)}
-          {#if isNewTierGroup(index)}
-            <div class="tier-separator" role="row">
-              <span class={`tier-badge ${tier.className}`}>{tier.label}</span>
-              <small class="subtle">range group</small>
-            </div>
-          {/if}
-          <div class="row" role="row">
-            <span class="mono">#{(page - 1) * 10 + index + 1}</span>
-            <span>{row.userName}</span>
-            <span class="mono">{row.wpm.toFixed(1)}</span>
-            <span class="mono">{row.accuracy.toFixed(1)}%</span>
-            <span>{row.difficulty}</span>
-            <span class="subtle">{new Date(row.createdAt ?? Date.now()).toLocaleDateString()}</span>
-          </div>
-        {/each}
-        {#if rows.length === 0}
-          <p class="empty subtle">No scores yet. Be the first on this board.</p>
+  {:else if rows.length === 0}
+    <p class="empty">No runs on this board yet. Finish a run and submit it to take first place.</p>
+  {:else}
+    <ol class="list">
+      {#each rows as row, index}
+        {@const tier = getTier(row.wpm, row.accuracy)}
+        {#if startsTier(index)}
+          <li class="tier" style={`--tier:${tier.color};--n:${index}`} aria-hidden="true">
+            <span class="gem"></span>
+            <strong>{tier.label}</strong>
+            <span class="need">{tier.minWpm}+ WPM and {tier.minAcc}%+ accuracy</span>
+          </li>
         {/if}
-      </div>
-    {/if}
-  </div>
+        <li class="row" style={`--tier:${tier.color};--fill:${(row.wpm / maxWpm) * 100}%;--n:${index}`}>
+          <span class="rank mono">{(page - 1) * PAGE_SIZE + index + 1}</span>
+          <span class="who">
+            <strong>{row.userName}</strong>
+            <small>{day(row.createdAt)}</small>
+          </span>
+          <span class="c-diff tag">{row.difficulty}</span>
+          <span class="c-acc mono">{row.accuracy.toFixed(1)}%</span>
+          <span class="speed">
+            <span><b class="mono">{row.wpm.toFixed(1)}</b> <small>WPM</small></span>
+            <span class="meter" aria-hidden="true"><i></i></span>
+          </span>
+        </li>
+      {/each}
+    </ol>
+  {/if}
+
+  {#if totalPages > 1}
+    <nav class="pager" aria-label="Pages">
+      <button class="pg arrow" type="button" aria-label="Previous page" on:click={() => onPageChange(page - 1)} disabled={page <= 1 || loading}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2.5L4.5 7L9 11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
+      {#each pageList as p}
+        {#if p === '…'}
+          <span class="gap" aria-hidden="true">…</span>
+        {:else}
+          <button class="pg mono" class:on={p === page} type="button" aria-label={`Page ${p}`} aria-current={p === page ? 'page' : undefined} on:click={() => onPageChange(p)} disabled={loading}>{p}</button>
+        {/if}
+      {/each}
+      <button class="pg arrow" type="button" aria-label="Next page" on:click={() => onPageChange(page + 1)} disabled={page >= totalPages || loading}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
+    </nav>
+  {/if}
 </section>
 
-<Modal bind:open={rangesOpen} title="About ranges" onClose={() => (rangesOpen = false)}>
-  <p class="subtle">
-    Ranges are global. Score tiers use the same WPM and accuracy thresholds for all languages.
+<Modal bind:open={rangesOpen} title="How ranks work" onClose={() => (rangesOpen = false)}>
+  <p class="subtle intro">
+    Ranks are the same for every language. A run gets the highest rank where it meets both numbers.
   </p>
-  <div class="range-rules">
-    {#each getRangeRules() as item}
-      <div class="range-rule">
-        <span class={`tier-badge ${item.className}`}>{item.label}</span>
-        <p class="subtle">{item.rule}</p>
-      </div>
+  <ul class="rules">
+    {#each tiers as t}
+      <li style={`--tier:${t.color}`}>
+        <span class="gem"></span>
+        <strong>{t.label}</strong>
+        <span class="need">{t.minWpm}+ WPM, {t.minAcc}%+ accuracy</span>
+      </li>
     {/each}
-  </div>
+  </ul>
 </Modal>
 
 <style>
-  .leaderboard {
-    padding: 1rem;
-    border-radius: var(--radius-sm);
+  .board {
+    padding: 1.4rem 1.4rem 1.2rem;
   }
 
   .head {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
   }
 
   h2 {
+    margin: 0 0 0.2rem;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  }
+
+  .head p {
     margin: 0;
-    font-size: clamp(1.1rem, 1.8vw, 1.35rem);
-    letter-spacing: -0.01em;
+    max-width: 52ch;
   }
 
-  .language-tone {
-    display: inline-block;
-    margin-left: 0.35rem;
-    letter-spacing: 0.01em;
-  }
-
-  .tone-all {
-    color: var(--muted);
-  }
-
-  .tone-typescript {
-    color: #9eccff;
-  }
-
-  .tone-javascript {
-    color: #ffe88a;
-  }
-
-  .tone-python {
-    color: #c0d9ff;
-  }
-
-  .tone-rust {
-    color: #ffc8a4;
-  }
-
-  .tone-sql {
-    color: #9ef1de;
-  }
-
-  .tone-go {
-    color: #a8f0ff;
-  }
-
-  .range-controls {
-    margin-top: 0.5rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: end;
-    flex-wrap: wrap;
-  }
-
-  .about-ranges {
-    min-height: auto;
-    margin-top: 0;
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--muted);
-    font-size: 0.82rem;
-    font-family: var(--mono);
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid transparent;
-    border-radius: 0;
-  }
-
-  .about-ranges:hover,
-  .about-ranges:focus-visible {
-    color: var(--text);
-    border-bottom-color: var(--muted);
-    outline: none;
-    transform: none;
-  }
-
-  .pager {
-    display: inline-flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin-left: auto;
-    align-self: flex-start;
-  }
-
-  .pager .mono {
-    font-size: 0.82rem;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
-
-  .nav-btn {
-    min-height: auto;
-    padding: 0.45rem 0.7rem;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    font-family: var(--mono);
-    letter-spacing: 0.03em;
-  }
-
-  .table {
-    display: grid;
-    gap: 0.5rem;
-  }
-
+  /* Shared grid so the header, tier rows and runs line up. */
+  .cols,
   .row {
     display: grid;
-    grid-template-columns: 0.5fr 1.2fr 0.75fr 0.9fr 0.9fr 0.9fr;
-    gap: 0.75rem;
+    grid-template-columns: 3rem minmax(0, 1.6fr) 6.5rem 6rem minmax(9rem, 1.2fr);
     align-items: center;
-    padding: 0.68rem 0.2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 0.92rem;
+    gap: 0 1rem;
   }
 
-  .head-row {
+  .cols {
+    padding: 0 1rem 0.5rem;
     color: var(--muted);
-    font-size: 0.8rem;
-    border-top: none;
-  }
-
-  .empty {
-    padding: 1rem 0.25rem 0.5rem;
-  }
-
-  .tier-separator {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.85rem 0.25rem 0.35rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .tier-separator small {
-    font-size: 0.73rem;
-  }
-
-  .loading-block {
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .skeleton-row {
-    display: grid;
-    grid-template-columns: 0.5fr 1.2fr 0.75fr 0.9fr 0.9fr 0.9fr;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.75rem 0.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .sk {
-    height: 1rem;
-    border-radius: 999px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.11),
-      rgba(255, 255, 255, 0.04)
-    );
-    background-size: 220% 100%;
-    animation: shimmer 1250ms ease-in-out infinite;
-    animation-delay: var(--sk-delay, 0ms);
-  }
-
-  .sk-rank {
-    width: 65%;
-  }
-  .sk-player {
-    width: 85%;
-  }
-  .sk-wpm {
-    width: 60%;
-  }
-  .sk-acc {
-    width: 72%;
-  }
-  .sk-difficulty {
-    width: 92%;
-  }
-  .sk-when {
-    width: 70%;
-  }
-
-  .tier-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.76rem;
-    border: 1px solid transparent;
-    font-family: var(--mono);
-    white-space: nowrap;
-  }
-
-  .tier-bronze {
-    background: rgba(196, 127, 86, 0.2);
-    border-color: rgba(196, 127, 86, 0.48);
-    color: #f3c7aa;
-  }
-
-  .tier-silver {
-    background: rgba(169, 186, 206, 0.2);
-    border-color: rgba(169, 186, 206, 0.5);
-    color: #dde8f6;
-  }
-
-  .tier-gold {
-    background: rgba(245, 201, 83, 0.22);
-    border-color: rgba(245, 201, 83, 0.52);
-    color: #ffe9a5;
-  }
-
-  .tier-platinum {
-    background: rgba(97, 232, 202, 0.2);
-    border-color: rgba(97, 232, 202, 0.5);
-    color: #b3fff0;
-  }
-
-  .tier-diamond {
-    background: rgba(123, 168, 255, 0.2);
-    border-color: rgba(123, 168, 255, 0.5);
-    color: #cde1ff;
-  }
-
-  .range-rules {
-    display: grid;
-    gap: 0.55rem;
-    margin: 0.85rem 0;
-  }
-
-  .range-rule {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 0.55rem;
-  }
-
-  .range-rule p {
-    margin: 0;
-    line-height: 1.4;
     font-size: 0.85rem;
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: 0% 0%;
-    }
-    100% {
-      background-position: 200% 0%;
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  /* Rank group header: a gem, the name, and what it takes. */
+  .tier {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    padding: 0 1rem;
+    color: var(--tier);
+  }
+
+  .tier:first-child {
+    margin-top: 0;
+  }
+
+  /* Whenever the list is rebuilt (filter, page) the runs cascade in and the meters fill. */
+  .tier,
+  .row {
+    animation: enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--n, 0) * 34ms);
+  }
+
+  .meter i {
+    transform-origin: left center;
+    animation: fill 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--n, 0) * 34ms + 180ms);
+  }
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
     }
   }
 
-  @media (max-width: 900px) {
-    .head,
+  @keyframes fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .tier strong {
+    font-size: 1rem;
+  }
+
+  .need {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .gem {
+    width: 0.8rem;
+    height: 0.8rem;
+    background: var(--tier);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    flex: none;
+  }
+
+  /* A run. Its tier tints the row; the meter is speed against the best run on the page. */
+  .row {
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--tier, #fff) 7%, #0b0c15);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--tier, #fff) 80%, transparent);
+  }
+
+  .rank {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .who {
+    display: grid;
+    min-width: 0;
+  }
+
+  .who strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .who small,
+  .speed small {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .tag {
+    justify-self: start;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.85rem;
+    text-transform: capitalize;
+  }
+
+  .speed {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .meter {
+    display: block;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+
+  .meter i {
+    display: block;
+    height: 100%;
+    width: var(--fill);
+    border-radius: 4px;
+    background: var(--tier);
+  }
+
+  .speed b {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty {
+    margin: 1.5rem 0;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--muted);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  /* Loading placeholders */
+  .sk {
+    height: 0.8rem;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    animation-delay: var(--delay, 0ms);
+  }
+  .w-s { width: 1.4rem; }
+  .w-m { width: 3.4rem; }
+  .w-l { width: 70%; }
+
+  @keyframes shimmer {
+    to { background-position: -200% 0; }
+  }
+
+  /* Pagination: numbered keys, the current page is the lit one. */
+  .pager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 1.4rem;
+  }
+
+  .pg {
+    min-width: 2.4rem;
+    height: 2.4rem;
+    display: inline-grid;
+    place-items: center;
+    padding: 0 0.5rem;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .pg:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text);
+  }
+
+  .pg.on {
+    animation: key-down 320ms cubic-bezier(0.3, 1.6, 0.5, 1);
+    color: #fff;
+    background: linear-gradient(180deg, #4d5cf7, #2633d4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 0 #121a80;
+  }
+
+  @keyframes key-down {
+    from {
+      transform: translateY(-5px) scale(0.86);
+    }
+  }
+
+  .pg:disabled:not(.on) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .arrow {
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+
+  .gap {
+    color: var(--muted);
+    padding: 0 0.2rem;
+  }
+
+  /* Rank rules in the modal */
+  .intro {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+  }
+
+  .rules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .rules li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--tier);
+  }
+
+  @media (max-width: 760px) {
+    .cols {
+      display: none;
+    }
+
     .row {
-      grid-template-columns: 1fr;
-      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        'rank who speed'
+        'rank diff acc';
+      row-gap: 0.15rem;
     }
 
-    .skeleton-row {
-      grid-template-columns: 1fr;
+    .rank { grid-area: rank; }
+    .who { grid-area: who; }
+    .speed { grid-area: speed; justify-self: end; min-width: 6rem; }
+    .c-diff { grid-area: diff; justify-self: start; }
+    .c-acc {
+      grid-area: acc;
+      justify-self: end;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
+    .need { display: none; }
+    .head { flex-direction: column; }
+  }
 
-    .head {
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
-    .range-controls {
-      width: 100%;
-    }
-
-    .range-rule {
-      grid-template-columns: 1fr;
-      gap: 0.35rem;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .sk { animation: none; }
   }
 </style>

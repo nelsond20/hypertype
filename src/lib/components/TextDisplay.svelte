@@ -31,13 +31,37 @@
     background: #05060c;
   }
 
+  /* A new text is revealed left to right, as if typed in. */
   p {
+    -webkit-mask-image: linear-gradient(100deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
+    mask-image: linear-gradient(100deg, #000 calc(var(--reveal) - 14%), transparent var(--reveal));
+    animation: reveal 1000ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
     margin: 0;
     font-size: clamp(1.05rem, 2vw, 1.4rem);
     line-height: 1.9;
     white-space: pre-wrap;
     word-break: break-word;
     color: rgba(179, 183, 193, 0.5);
+  }
+
+  .text {
+    animation: settle 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes reveal {
+    from {
+      --reveal: -14%;
+    }
+    to {
+      --reveal: 120%;
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.99);
+    }
   }
 
   span {

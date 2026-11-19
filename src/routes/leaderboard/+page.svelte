@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import CustomSelect from '$lib/components/CustomSelect.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
   import LeaderboardTable from '$lib/components/LeaderboardTable.svelte';
   import { difficulties, languages } from '$lib/domain/game/types';
   import type { LeaderboardItem } from '$lib/domain/game/types';
@@ -85,31 +85,31 @@
       <h1>Leaderboard</h1>
       <p class="subtle">The best runs, filtered by difficulty and language.</p>
     </div>
-    <div class="filters panel">
-      <label class="field">
-        <span>Difficulty</span>
-        <CustomSelect
+    <div class="filters">
+      <div class="group">
+        <span class="name">Difficulty</span>
+        <Segmented
           value={difficulty}
           options={difficultyOptions}
-          ariaLabel="Filter leaderboard difficulty"
+          ariaLabel="Filter by difficulty"
           onChange={(next) => {
             difficulty = next as typeof difficulty;
             loadData(1);
           }}
         />
-      </label>
-      <label class="field">
-        <span>Language</span>
-        <CustomSelect
+      </div>
+      <div class="group">
+        <span class="name">Language</span>
+        <Segmented
           value={language}
           options={languageOptions}
-          ariaLabel="Filter leaderboard language"
+          ariaLabel="Filter by language"
           onChange={(next) => {
             language = next as typeof language;
             loadData(1);
           }}
         />
-      </label>
+      </div>
     </div>
   </div>
 
@@ -121,7 +121,7 @@
     <ol class="podium" aria-label="Top three runs">
       {#each podium as slot}
         <li class="step place-{slot.place}">
-          <span class="name">{slot.row.userName}</span>
+          <span class="who-name">{slot.row.userName}</span>
           <strong class="score mono">{slot.row.wpm.toFixed(1)}</strong>
           <span class="unit subtle">WPM · {slot.row.accuracy.toFixed(1)}%</span>
           <span class="cap" aria-hidden="true">{slot.place}</span>
@@ -142,22 +142,19 @@
 
 <style>
   .board {
-    padding: 1rem 0 1.6rem;
+    padding: 1rem 0 2rem;
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   .hero {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: end;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 1.1rem;
   }
 
   h1 {
     margin: 0 0 0.3rem;
-    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-size: clamp(2.2rem, 4.4vw, 3.4rem);
     font-weight: 700;
   }
 
@@ -167,90 +164,120 @@
 
   .filters {
     display: flex;
-    gap: 0.75rem;
-    padding: 0.9rem;
     flex-wrap: wrap;
-    border-radius: var(--radius-sm);
-    box-shadow: none;
+    gap: 1rem 2rem;
   }
 
-  .filters .field {
-    min-width: 12rem;
+  .group {
+    display: grid;
+    gap: 0.45rem;
   }
 
-  .filters .field span {
-    font-size: 0.85rem;
+  .name {
+    font-size: 0.88rem;
     color: var(--muted);
   }
 
   .error {
     margin: 0;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     color: var(--danger);
   }
 
-  /* Podium: three keycaps, the winner's standing tallest. */
+  /* Podium: three caps standing at different heights; the winner is cobalt. */
   .podium {
     list-style: none;
     margin: 0.5rem 0 0.25rem;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: 1rem;
     align-items: end;
   }
 
   .step {
+    --top: #e2e5ed;
+    --bottom: #b9bdca;
+    --wall: #6c7082;
+    --ink: #14162a;
     position: relative;
     display: grid;
     gap: 0.15rem;
     align-content: start;
-    padding: 1rem 1.1rem 1.2rem;
-    border: 1px solid var(--line-strong);
-    border-bottom: 6px solid #05060c;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #1b1d2d, #12131f);
+    padding: 1.1rem 1.3rem 1.3rem;
+    border-radius: 18px;
     min-height: 8.5rem;
+    background: linear-gradient(180deg, var(--top), var(--bottom));
+    color: var(--ink);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 6px 0 var(--wall),
+      0 24px 40px -16px rgba(0, 0, 0, 0.8);
+  }
+
+  /* The caps pop up one after another, the winner last. */
+  .step {
+    animation: pop 640ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+  .step.place-3 { animation-delay: 0ms; }
+  .step.place-2 { animation-delay: 110ms; }
+  .step.place-1 { animation-delay: 220ms; }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(46px) scaleY(0.88);
+    }
   }
 
   .step.place-1 {
+    --top: #4d5cf7;
+    --bottom: #2633d4;
+    --wall: #121a80;
+    --ink: #fff;
     min-height: 11rem;
-    background: linear-gradient(180deg, #3441e8, var(--cobalt));
-    border-color: rgba(140, 150, 255, 0.5);
-    border-bottom-color: #0f1668;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      0 6px 0 var(--wall),
+      0 30px 60px -16px rgba(38, 51, 212, 0.7);
   }
 
   .step.place-3 {
     min-height: 7rem;
   }
 
-  .name {
-    font-weight: 600;
+  .who-name {
+    font-weight: 650;
+    font-size: 1rem;
+    color: inherit;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .score {
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-size: clamp(1.9rem, 3.4vw, 2.8rem);
     line-height: 1.1;
+    font-weight: 600;
   }
 
-  .place-1 .unit {
-    color: rgba(255, 255, 255, 0.78);
+  .unit {
+    color: inherit !important;
+    opacity: 0.72;
+    font-size: 0.9rem;
   }
 
   .cap {
     position: absolute;
-    top: 0.8rem;
-    right: 1rem;
+    top: 0.9rem;
+    right: 1.2rem;
     font-family: var(--mono);
     font-weight: 700;
-    font-size: 1.1rem;
-    opacity: 0.55;
+    font-size: 1.2rem;
+    opacity: 0.5;
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 640px) {
     .podium {
       grid-template-columns: 1fr;
     }

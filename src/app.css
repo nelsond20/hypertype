@@ -92,12 +92,14 @@ select {
   margin: 0 auto;
 }
 
+/* Surfaces: solid, with a lit top edge. No frosted glass. */
 .panel {
-  background: var(--panel);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, #0d0f19, #090a12);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 60px -30px rgba(0, 0, 0, 0.8);
 }
 
 .subtle {
@@ -108,96 +110,147 @@ select {
   font-family: var(--mono);
 }
 
-.eyebrow {
-  margin: 0;
-  color: var(--accent);
-  font-size: 0.9rem;
-}
-
-/* A key: raised cap with a visible side wall that sinks when pressed */
+/*
+  Keys. Each cap carries its own side wall in a darker shade of its own
+  colour, so it reads as a raised key on a dark page.
+*/
 .key,
 .button {
-  --wall: #05060c;
+  --top: #e2e5ed;
+  --bottom: #b9bdca;
+  --wall: #6c7082;
+  --ink: #14162a;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 2.9rem;
-  padding: 0.6rem 1.25rem 0.7rem;
-  border: 1px solid var(--line-strong);
-  border-bottom: 4px solid var(--wall);
-  border-radius: 11px;
-  background: linear-gradient(180deg, #1b1d2d, #12131f);
-  color: var(--text);
-  font-weight: 600;
+  min-height: 2.75rem;
+  padding: 0.55rem 1.3rem;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--top), var(--bottom));
+  color: var(--ink);
+  font-weight: 650;
   cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 3px 0 var(--wall),
+    0 10px 20px -8px rgba(0, 0, 0, 0.7);
   transition:
-    transform 90ms ease,
-    border-bottom-width 90ms ease,
-    background 160ms ease;
+    transform 80ms ease,
+    box-shadow 80ms ease,
+    filter 160ms ease;
 }
 
 .key:hover,
 .button:hover {
-  background: linear-gradient(180deg, #23263a, #171929);
+  filter: brightness(1.06);
 }
 
 .key:active,
 .button:active {
   transform: translateY(3px);
-  border-bottom-width: 1px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 0 var(--wall);
 }
 
 .key:disabled,
 .button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  filter: none;
 }
 
 .key.primary,
 .button.primary {
-  --wall: #0f1668;
-  background: linear-gradient(180deg, #3441e8, var(--cobalt));
-  border-color: rgba(140, 150, 255, 0.5);
-  color: #fff;
+  --top: #4d5cf7;
+  --bottom: #2633d4;
+  --wall: #121a80;
+  --ink: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 3px 0 var(--wall),
+    0 12px 28px -8px rgba(38, 51, 212, 0.65);
 }
 
-.key.primary:hover,
-.button.primary:hover {
-  background: linear-gradient(180deg, #4552f0, #2e3be0);
+.key.primary:active,
+.button.primary:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 var(--wall);
 }
 
+/* Ghost: no cap at all, just an outline. */
 .key.ghost,
 .button.ghost {
   background: transparent;
-  border-bottom-width: 1px;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.key.ghost:hover,
+.button.ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  filter: none;
 }
 
 .key.ghost:active,
 .button.ghost:active {
   transform: none;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
+.key.sm {
+  min-height: 2.2rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Fields: sunk into the surface, a cobalt ring when active. */
 .field {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
-.field label {
-  font-size: 0.9rem;
+.field > span,
+.field > label {
+  font-size: 0.88rem;
   color: var(--muted);
 }
 
+.field input,
 .field select,
-.field input {
+.input {
   width: 100%;
-  min-height: 3rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  min-height: 2.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(179, 183, 193, 0.1);
+  background: #05060b;
   color: var(--text);
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 1rem;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.field input:hover,
+.input:hover {
+  border-color: rgba(179, 183, 193, 0.22);
+}
+
+.field input:focus,
+.input:focus {
+  outline: none;
+  border-color: var(--cobalt);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.55),
+    0 0 0 3px rgba(38, 51, 212, 0.4);
 }
 
 .field input {
@@ -275,4 +328,51 @@ select {
 .legal-page .meta {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* ---- Motion ------------------------------------------------------------ */
+
+/* Registered so a gradient edge can be animated: the typing text is revealed with it. */
+@property --reveal {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 120%;
+}
+
+/* Route changes: the page leaves quickly and arrives with a rise; the rest stays still. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(topbar) {
+  animation-duration: 0s;
+}
+
+::view-transition-old(page) {
+  animation: page-out 140ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(page) {
+  animation: page-in 460ms cubic-bezier(0.2, 0.8, 0.2, 1) 140ms both;
+}
+
+::view-transition-group(nav-pill) {
+  animation-duration: 460ms;
+  animation-timing-function: cubic-bezier(0.34, 1.35, 0.5, 1);
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.994);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.992);
+  }
 }

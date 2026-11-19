@@ -28,7 +28,7 @@
   >
     <header>
       <h2>{title}</h2>
-      <button class="close-btn" type="button" on:click={onClose} aria-label="Cerrar">
+      <button class="close-btn" type="button" on:click={onClose} aria-label="Close">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M1.5 1.5L12.5 12.5M12.5 1.5L1.5 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
@@ -43,7 +43,7 @@
     position: fixed;
     inset: 0;
     z-index: 19;
-    background: rgba(2, 5, 10, 0.76);
+    background: rgba(2, 2, 6, 0.8);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
   }
@@ -57,12 +57,12 @@
     max-height: calc(100dvh - 4rem);
     overflow-y: auto;
     margin: auto;
-    padding: 1.5rem;
-    background: var(--panel-solid);
-    border: 1px solid rgba(183, 208, 255, 0.18);
+    padding: 1.6rem;
+    background: linear-gradient(180deg, #11131f, #0a0b13);
+    border: 1px solid var(--line-strong);
     box-shadow:
-      0 0 0 1px rgba(123, 136, 255, 0.06),
-      0 32px 96px rgba(0, 0, 0, 0.6);
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 40px 120px rgba(0, 0, 0, 0.75);
   }
 
   header {
@@ -77,8 +77,7 @@
 
   h2 {
     margin: 0;
-    font-size: 1.1rem;
-    letter-spacing: -0.025em;
+    font-size: 1.4rem;
   }
 
   .close-btn {
@@ -90,7 +89,7 @@
     height: 2rem;
     padding: 0;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.04);
     color: var(--muted);
     cursor: pointer;

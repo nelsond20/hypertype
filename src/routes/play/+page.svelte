@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import CustomSelect from '$lib/components/CustomSelect.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
   import Game from '$lib/components/Game.svelte';
   import {
     defaultPreferences,
@@ -72,57 +72,62 @@
   </div>
 
   <div class="controls panel">
-    <label class="field">
-      <span>Difficulty</span>
-      <CustomSelect
-        value={settings.difficulty}
-        options={difficultyOptions}
-        ariaLabel="Select difficulty"
-        onChange={(next) => {
-          updateSettings({ difficulty: next as GameSettings['difficulty'] });
-          refreshGameSession();
-        }}
-      />
-    </label>
-    <label class="field">
-      <span>Language</span>
-      <CustomSelect
+    <div class="group wide">
+      <span class="name">Language</span>
+      <Segmented
         value={settings.language}
         options={languageOptions}
-        ariaLabel="Select language"
+        ariaLabel="Language"
         onChange={(next) => {
           updateSettings({ language: next as GameSettings['language'] });
           refreshGameSession();
         }}
       />
-    </label>
-    <label class="field">
-      <span>Length</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Difficulty</span>
+      <Segmented
+        value={settings.difficulty}
+        options={difficultyOptions}
+        ariaLabel="Difficulty"
+        onChange={(next) => {
+          updateSettings({ difficulty: next as GameSettings['difficulty'] });
+          refreshGameSession();
+        }}
+      />
+    </div>
+    <div class="group">
+      <span class="name">Length</span>
+      <Segmented
         value={settings.textLength}
         options={lengthOptions}
-        ariaLabel="Select text length"
+        ariaLabel="Text length"
         onChange={(next) => {
           updateSettings({ textLength: next as GameSettings['textLength'] });
           refreshGameSession();
         }}
       />
-    </label>
-    <label class="field">
-      <span>Timer</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Timer</span>
+      <Segmented
         value={settings.durationSeconds}
         options={timerOptions}
-        ariaLabel="Select timer length"
+        ariaLabel="Timer length"
         onChange={(next) => {
           updateSettings({ durationSeconds: Number(next) as SessionLength });
           refreshGameSession();
         }}
       />
-    </label>
-    <label class="field">
-      <span>Player name</span>
-      <input bind:value={settings.playerName} on:input={() => updateSettings({ playerName: settings.playerName })} maxlength="32" />
+    </div>
+    <label class="group field">
+      <span class="name">Player name</span>
+      <input
+        bind:value={settings.playerName}
+        on:input={() => updateSettings({ playerName: settings.playerName })}
+        maxlength="32"
+        autocomplete="nickname"
+      />
     </label>
   </div>
 
@@ -146,24 +151,31 @@
 
   .controls {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.75rem;
-    padding: 0.9rem;
-    border-radius: var(--radius-sm);
-    box-shadow: none;
+    grid-template-columns: repeat(4, auto);
+    justify-content: start;
+    gap: 1rem 2rem;
+    padding: 1.1rem 1.25rem;
   }
 
-  .field span {
-    font-size: 0.85rem;
+  .group {
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+  }
+
+  .group.wide {
+    grid-column: 1 / -1;
+  }
+
+  .name {
+    font-size: 0.88rem;
     color: var(--muted);
   }
 
-  .controls .field input {
-    min-height: 2.9rem;
-    border-radius: 10px;
-    padding: 0.6rem 0.8rem;
+  .group.field input {
+    min-width: 12rem;
     font-family: var(--mono);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
   }
 
   @media (max-width: 980px) {
@@ -172,7 +184,7 @@
     }
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 560px) {
     .controls {
       grid-template-columns: 1fr;
     }
