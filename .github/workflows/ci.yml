@@ -12,7 +12,7 @@ jobs:
       - name: Block committed secrets
         run: |
           set -euo pipefail
-          if git ls-files | grep -Eq '^\.env($|\.)'; then
+          if git ls-files | grep -Ev '^\.env\.example$' | grep -E '^\.env($|\.)' > /dev/null; then
             echo "Tracked .env files are not allowed."
             exit 1
           fi
