@@ -61,7 +61,7 @@
     background: var(--panel-solid);
     border: 1px solid rgba(183, 208, 255, 0.18);
     box-shadow:
-      0 0 0 1px rgba(115, 224, 196, 0.06),
+      0 0 0 1px rgba(123, 136, 255, 0.06),
       0 32px 96px rgba(0, 0, 0, 0.6);
   }
 

@@ -249,12 +249,12 @@
   }
 
   .trigger:hover {
-    border-color: rgba(115, 224, 196, 0.35);
-    background: rgba(115, 224, 196, 0.08);
+    border-color: rgba(123, 136, 255, 0.35);
+    background: rgba(123, 136, 255, 0.08);
   }
 
   .trigger:focus-visible {
-    outline: 2px solid rgba(115, 224, 196, 0.45);
+    outline: 2px solid rgba(123, 136, 255, 0.45);
     outline-offset: 2px;
   }
 
@@ -310,7 +310,7 @@
   }
 
   :global(.custom-select-menu button.selected) {
-    background: rgba(115, 224, 196, 0.14);
+    background: rgba(123, 136, 255, 0.14);
     color: #d8fff3;
   }
 </style>
