@@ -302,10 +302,9 @@
     display: grid;
     gap: 0.1rem;
     padding: 0.6rem 0.9rem 0.7rem;
-    border: 1px solid var(--line-strong);
-    border-bottom: 4px solid #05060c;
-    border-radius: 11px;
-    background: linear-gradient(180deg, #1b1d2d, #12131f);
+    border-radius: 12px;
+    background: #05060b;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   .chip small { color: var(--muted); font-size: 0.78rem; }

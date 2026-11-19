@@ -403,11 +403,12 @@
       on:click={focusCapture}
       on:keydown={onPromptAreaKeydown}>
       <div class="capture-status">
-        <strong>{isCaptureActive ? 'Keyboard ready' : 'Press any key or click here to start typing'}</strong>
+        <span class="dot" aria-hidden="true"></span>
+        <strong>{isCaptureActive ? 'Keyboard ready' : 'Click here or press any key to start'}</strong>
         <span class="subtle">
           {isCaptureActive
-            ? 'Your keystrokes are being captured now. Press Esc to pause.'
-            : 'The first key will arm the session and start the timer.'}
+            ? 'Esc pauses.'
+            : 'The first key starts the timer.'}
         </span>
       </div>
       <TextDisplay target={prompt} {typed} lockedError={invalidInput} />
@@ -433,11 +434,13 @@
   </div>
 
   <aside class="side panel">
-    <h3>Session</h3>
-    <p class="subtle">Language <span class="mono">{settings.language}</span></p>
-    <p class="subtle">Difficulty <span class="mono">{settings.difficulty}</span></p>
-    <p class="subtle">Length <span class="mono">{settings.textLength}</span></p>
-    <p class="subtle">Seed <span class="mono">{seeded}</span></p>
+    <h3>This run</h3>
+    <dl class="facts">
+      <dt>Language</dt><dd>{settings.language}</dd>
+      <dt>Difficulty</dt><dd>{settings.difficulty}</dd>
+      <dt>Length</dt><dd>{settings.textLength}</dd>
+      <dt>Seed</dt><dd>{seeded}</dd>
+    </dl>
 
     {#if finished}
       <div class="result">
@@ -537,18 +540,27 @@
   }
 
   .capture-status {
-    display: grid;
-    gap: 0.2rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem 0.7rem;
+    padding: 0 0.25rem;
+    font-size: 0.95rem;
   }
 
-  .prompt-area.ready .capture-status {
-    border-color: rgba(123, 136, 255, 0.45);
-    background: rgba(123, 136, 255, 0.08);
+  .dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 160ms ease, box-shadow 160ms ease;
   }
+
+  .prompt-area.ready .dot {
+    background: #7b88ff;
+    box-shadow: 0 0 0 4px rgba(123, 136, 255, 0.25);
+  }
+
 
   .prompt-area.invalid {
     animation: shake 300ms ease-in-out;
@@ -557,10 +569,6 @@
     background: rgba(255, 107, 129, 0.06);
   }
 
-  .prompt-area.invalid .capture-status {
-    border-color: rgba(255, 107, 129, 0.72);
-    background: rgba(255, 107, 129, 0.12);
-  }
 
   .prompt-area.invalid :global(.text.panel) {
     border-color: rgba(255, 107, 129, 0.88);
@@ -573,10 +581,6 @@
     background: rgba(123, 136, 255, 0.04);
   }
 
-  .prompt-area.ready:not(.invalid):not(.finished) .capture-status {
-    border-color: rgba(123, 136, 255, 0.45);
-    background: rgba(123, 136, 255, 0.08);
-  }
 
   .capture-status strong {
     font-size: 0.95rem;
@@ -640,11 +644,30 @@
   }
 
   .side {
-    padding: 1rem;
+    padding: 1.25rem;
     align-self: start;
     position: sticky;
     top: 1rem;
-    border-radius: var(--radius-sm);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1rem;
+    margin: 0 0 1.2rem;
+    font-size: 0.92rem;
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    text-align: right;
+    font-family: var(--mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   h3,
@@ -662,6 +685,13 @@
   .help ol {
     padding-left: 1.2rem;
     color: var(--muted);
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .help {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
   }
 
   .result {

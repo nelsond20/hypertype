@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import CustomSelect from '$lib/components/CustomSelect.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
   import {
     defaultPreferences,
     loadPreferences,
@@ -61,7 +61,7 @@
 <section class="shell settings">
   <div>
     <h1>Settings</h1>
-    <p class="subtle">Choose the corpus style, duration, and theme you want before a run.</p>
+    <p class="subtle">These are the defaults for every new run.</p>
   </div>
 
   <div class="panel form">
@@ -69,51 +69,51 @@
       <span>Player name</span>
       <input bind:value={settings.playerName} maxlength="32" />
     </label>
-    <label class="field">
-      <span>Difficulty</span>
-      <CustomSelect
+    <div class="group">
+      <span class="name">Difficulty</span>
+      <Segmented
         value={settings.difficulty}
         options={difficultyOptions}
         ariaLabel="Select difficulty"
         onChange={(next) => (settings.difficulty = next as GameSettings['difficulty'])}
       />
-    </label>
-    <label class="field">
-      <span>Language</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Language</span>
+      <Segmented
         value={settings.language}
         options={languageOptions}
         ariaLabel="Select language"
         onChange={(next) => (settings.language = next as GameSettings['language'])}
       />
-    </label>
-    <label class="field">
-      <span>Length</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Length</span>
+      <Segmented
         value={settings.textLength}
         options={lengthOptions}
         ariaLabel="Select text length"
         onChange={(next) => (settings.textLength = next as GameSettings['textLength'])}
       />
-    </label>
-    <label class="field">
-      <span>Duration</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Duration</span>
+      <Segmented
         value={settings.durationSeconds}
         options={durationOptions}
         ariaLabel="Select duration"
         onChange={(next) => (settings.durationSeconds = Number(next) as GameSettings['durationSeconds'])}
       />
-    </label>
-    <label class="field">
-      <span>Theme</span>
-      <CustomSelect
+    </div>
+    <div class="group">
+      <span class="name">Theme</span>
+      <Segmented
         value={settings.theme}
         options={themeOptions}
         ariaLabel="Select theme"
         onChange={(next) => (settings.theme = next as GameSettings['theme'])}
       />
-    </label>
+    </div>
     <div class="actions">
       <button class="button primary" type="button" on:click={persist}>Save settings</button>
       <a class="button ghost" href="/play">Go to play</a>
@@ -126,31 +126,47 @@
 
 <style>
   .settings {
-    padding: 0.5rem 0 2rem;
+    padding: 1rem 0 2rem;
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
     max-width: 820px;
   }
 
-
   h1 {
-    margin: 0.35rem 0 0.6rem;
-    font-size: clamp(2.2rem, 4vw, 4rem);
-    letter-spacing: -0.05em;
+    margin: 0 0 0.3rem;
+    font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  }
+
+  .settings p {
+    margin: 0;
   }
 
   .form {
-    padding: 1rem;
+    padding: 1.5rem;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: 1.4rem 1.5rem;
+    align-items: start;
+  }
+
+  .group {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .name {
+    font-size: 0.88rem;
+    color: var(--muted);
   }
 
   .actions {
     display: flex;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 0.9rem;
     grid-column: 1 / -1;
     flex-wrap: wrap;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
   }
 
   @media (max-width: 720px) {
