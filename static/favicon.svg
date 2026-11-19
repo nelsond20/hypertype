@@ -1,13 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="16" fill="#07111f" />
-  <rect x="10" y="10" width="44" height="44" rx="12" fill="url(#surface)" />
-  <path d="M20 22L13.5 32L20 42" stroke="#73E0C4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M44 22L50.5 32L44 42" stroke="#73E0C4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M35.5 19L28.5 45" stroke="#8F9BFF" stroke-width="4.5" stroke-linecap="round" />
+  <title>HyperType</title>
   <defs>
-    <linearGradient id="surface" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0F1D34" />
-      <stop offset="1" stop-color="#0B1729" />
+    <linearGradient id="cap" x1="32" y1="2" x2="32" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6573ff" />
+      <stop offset="1" stop-color="#2633d4" />
+    </linearGradient>
+    <linearGradient id="dish" x1="32" y1="9" x2="32" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c26a8" />
+      <stop offset="1" stop-color="#3a49ee" />
     </linearGradient>
   </defs>
+  <!-- side wall of the key -->
+  <rect x="3" y="9" width="58" height="52" rx="15" fill="#0f1670" />
+  <!-- top of the key -->
+  <rect x="3" y="3" width="58" height="52" rx="15" fill="url(#cap)" />
+  <rect x="3.75" y="3.75" width="56.5" height="50.5" rx="14.25" stroke="#ffffff" stroke-opacity=".35" stroke-width="1.5" />
+  <!-- dished surface -->
+  <rect x="10" y="9" width="44" height="40" rx="10" fill="url(#dish)" />
+  <rect x="10.5" y="9.5" width="43" height="39" rx="9.5" stroke="#000" stroke-opacity=".28" stroke-width="1" />
+  <!-- engraved H -->
+  <path d="M18.5 19.5V38.5M32.5 19.5V38.5M18.5 29H32.5" stroke="#ffffff" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- the cursor -->
+  <rect x="37.5" y="34" width="10.5" height="5.5" rx="2.75" fill="#c6d84a" />
 </svg>

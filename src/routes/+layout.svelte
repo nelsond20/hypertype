@@ -30,7 +30,7 @@
 <div class="app-frame">
   <header class="topbar shell">
     <a class="brand" href="/home">
-      <img class="brand-mark" src="/icon.png" alt="HyperType brand mark" />
+      <img class="brand-mark" src="/logo.svg" alt="" width="36" height="36" />
       <span>
         <strong>HyperType</strong>
         
@@ -91,11 +91,20 @@
   }
 
   .brand-mark {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.25rem;
+    height: 2.25rem;
     display: block;
     object-fit: contain;
-    border-radius: 10px;
+    transition: transform 160ms ease;
+  }
+
+  /* The mark is a key: it dips when you press it. */
+  .brand:hover .brand-mark {
+    transform: translateY(-1px) rotate(-3deg);
+  }
+
+  .brand:active .brand-mark {
+    transform: translateY(2px);
   }
 
   .nav {
