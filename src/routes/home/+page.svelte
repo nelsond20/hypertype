@@ -1,373 +1,350 @@
 <script lang="ts">
-  const terminalCode = `const prompt = generateCorpusText({
+  import { onMount } from 'svelte';
+  import BentoCard from '$lib/components/BentoCard.svelte';
+  import BentoGrid from '$lib/components/BentoGrid.svelte';
+  import KeycapOrb from '$lib/components/KeycapOrb.svelte';
+  import type { Keycap } from '$lib/components/keycap-orb/geometry';
+  import type { LeaderboardItem } from '$lib/domain/game/types';
+
+  // The centre cap faces you; the list reads outward from it.
+  const keys: Keycap[] = [
+    { label: 'TS', finish: 'cobalt', hotkey: 't' },
+    { label: 'JS', finish: 'ink', hotkey: 'j' },
+    { icon: 'braces', finish: 'ash' },
+    { label: 'Py', finish: 'ink', hotkey: 'p' },
+    { icon: 'bolt', finish: 'ash' },
+    { label: 'SQL', finish: 'ink', hotkey: 's' },
+    { label: 'Rs', finish: 'glass', hotkey: 'r' },
+    { icon: 'terminal', finish: 'ink' },
+    { icon: 'code', finish: 'ink' },
+    { icon: 'check', finish: 'lime' },
+    { icon: 'hash', finish: 'ash' },
+    { label: 'Go', finish: 'cobalt', hotkey: 'g' },
+    { icon: 'search', finish: 'ink' },
+    { icon: 'cursor', finish: 'ash' },
+    { icon: 'slash', finish: 'ink' },
+    { icon: 'layers', finish: 'glass' },
+    { icon: 'chevrons', finish: 'ash' },
+    { icon: 'none', finish: 'ink' },
+    { icon: 'arrow', finish: 'ink' },
+    { icon: 'none', finish: 'cobalt' },
+  ];
+
+  const snippet = `const prompt = generateCorpusText({
   difficulty: 'medium',
   language: 'typescript',
   seed: 124578,
-  textLength: 'medium'
 });`;
+
+  let shown = snippet;
+  let top: LeaderboardItem[] = [];
+  let boardState: 'loading' | 'ready' | 'empty' | 'error' = 'loading';
+
+  onMount(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calm) {
+      let i = 0;
+      shown = '';
+      timer = setInterval(() => {
+        i += 1;
+        shown = snippet.slice(0, i);
+        if (i >= snippet.length + 24) i = 0;
+      }, 55);
+    }
+
+    fetch('/api/leaderboard?page=1&pageSize=5')
+      .then((r) => r.json())
+      .then((data) => {
+        top = data?.items ?? [];
+        boardState = top.length ? 'ready' : 'empty';
+      })
+      .catch(() => (boardState = 'error'));
+
+    return () => timer && clearInterval(timer);
+  });
+
+  const langs = ['TypeScript', 'JavaScript', 'Python', 'Rust', 'SQL', 'Go'];
+  const levels = [
+    { name: 'Easy', note: 'short, forgiving lines' },
+    { name: 'Medium', note: 'real functions and types' },
+    { name: 'Hard', note: 'dense, symbol-heavy code' },
+  ];
 </script>
 
 <svelte:head>
   <title>HyperType</title>
 </svelte:head>
 
-<section class="hero">
-  <div class="shell hero-grid">
-    <div class="copy">
-      <p class="eyebrow mono">Code corpus typing game</p>
-      <h1>HyperType turns code into a fast, replayable typing arena.</h1>
-      <p class="lede">
-        Practice against real code snippets, track live WPM and accuracy, and submit scores to a
-        persistent leaderboard powered by MongoDB.
-      </p>
-      <div class="cta-wrap">
-        <div class="cta">
-          <a class="btn-primary" href="/play">
-            <span>Play now</span>
-            <span class="arrow" aria-hidden="true">→</span>
-          </a>
-          <a class="btn-link" href="/leaderboard">View leaderboard</a>
-        </div>
-        <p class="cta-note mono">Start a run in one click with your saved settings.</p>
-      </div>
-      <ul class="meta mono">
-        <li>single-player MVP</li>
-        <li>difficulty-based code corpus</li>
-      </ul>
+<section class="hero shell">
+  <div class="copy">
+    <h1>HyperType turns code into a fast, replayable typing arena.</h1>
+    <p class="lede">
+      Type real snippets in six languages, watch your WPM and accuracy move as you go, and put the
+      run on a public leaderboard.
+    </p>
+    <div class="cta">
+      <a class="key primary" href="/play">Play now</a>
+      <a class="key" href="/leaderboard">See the leaderboard</a>
     </div>
+    <p class="hint subtle">Try it: drag the keys, or click the ball and type.</p>
+  </div>
 
-    <div class="visual panel">
-      <div class="terminal">
-        <div class="terminal-head">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-        <pre><code>{terminalCode}</code></pre>
-        <div class="terminal-footer">
-          <div>
-            <span class="label">WPM</span>
-            <strong>82.4</strong>
-          </div>
-          <div>
-            <span class="label">Accuracy</span>
-            <strong>96.1%</strong>
-          </div>
-          <div>
-            <span class="label">Combo</span>
-            <strong>38</strong>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="orb-wrap">
+    <KeycapOrb {keys} rings={11} scale={0.78} height="100%" ariaLabel="A ball of keycaps carrying language names. Drag to spin it, press a cap, or focus it and type." />
   </div>
 </section>
 
-<section class="shell sections">
-  <div class="section-copy">
-    <p class="eyebrow mono">Why it matters</p>
-    <h2>Built for the MVP you described.</h2>
-    <p class="subtle">
-      The first release focuses on a polished game loop, deterministic text generation, score
-      submission, and a public leaderboard that can scale without changing the UI.
-    </p>
-  </div>
+<section class="shell bento-section" aria-label="What you get">
+  <BentoGrid>
+    <BentoCard
+      class="b-snippet"
+      name="Real code, seeded"
+      description="Every run is generated from a seed, so a score can be replayed and compared fairly."
+      href="/play"
+      cta="Start a run"
+    >
+      <pre class="code" aria-hidden="true"><code>{shown}<span class="caret"></span></code></pre>
+    </BentoCard>
 
-  <div class="grid">
-    <article>
-      <h3>Game feel</h3>
-      <p>Live WPM, error highlighting, combo feedback, timer pressure, and responsive capture.</p>
-    </article>
-    <article>
-      <h3>Code corpus</h3>
-      <p>Difficulty and language both matter. The prompt generator uses seeded code snippets for reproducibility.</p>
-    </article>
-    <article>
-      <h3>Persistence</h3>
-      <p>Scores go through serverless API routes and land in MongoDB with leaderboard pagination.</p>
-    </article>
-  </div>
+    <BentoCard
+      class="b-board"
+      name="Public leaderboard"
+      description="Top runs by difficulty and language."
+      href="/leaderboard"
+      cta="Open the board"
+    >
+      {#if boardState === 'ready'}
+        <ol class="rows">
+          {#each top as row, i}
+            <li>
+              <span class="pos mono">{i + 1}</span>
+              <span class="who">{row.userName}</span>
+              <span class="wpm mono">{row.wpm.toFixed(0)}</span>
+            </li>
+          {/each}
+        </ol>
+      {:else if boardState === 'loading'}
+        <p class="subtle">Loading scores…</p>
+      {:else if boardState === 'empty'}
+        <p class="subtle">No scores yet. Yours could be the first.</p>
+      {:else}
+        <p class="subtle">The board could not load. Try again in a moment.</p>
+      {/if}
+    </BentoCard>
+
+    <BentoCard
+      class="b-live"
+      name="Live feedback"
+      description="WPM, accuracy and combo update on every key."
+    >
+      <div class="chips">
+        <span class="chip"><small>WPM</small><strong class="mono">82.4</strong></span>
+        <span class="chip"><small>Accuracy</small><strong class="mono">96.1%</strong></span>
+        <span class="chip"><small>Combo</small><strong class="mono">38</strong></span>
+      </div>
+    </BentoCard>
+
+    <BentoCard
+      class="b-langs"
+      name="Six languages"
+      description="Pick the one you actually write."
+    >
+      <div class="chips">
+        {#each langs as l}<span class="chip small mono">{l}</span>{/each}
+      </div>
+    </BentoCard>
+
+    <BentoCard
+      class="b-levels"
+      name="Three difficulties"
+      description="From warm-up lines to symbol-heavy code."
+    >
+      <ul class="levels">
+        {#each levels as l}
+          <li><strong>{l.name}</strong><span class="subtle">{l.note}</span></li>
+        {/each}
+      </ul>
+    </BentoCard>
+  </BentoGrid>
 </section>
 
 <style>
   .hero {
-    padding: 0.85rem 0 1.25rem;
-  }
-
-  .hero-grid {
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    min-height: clamp(24rem, 68svh, 36rem);
+    min-height: min(44rem, calc(100svh - 5rem));
   }
 
-  .copy h1 {
-    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-    line-height: 1.24;
-    letter-spacing: -0.025em;
-    margin: 0.4rem 0 1rem;
-    max-width: 28ch;
+  .copy {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 0;
+    max-width: 34rem;
+  }
+
+  h1 {
+    margin: 0 0 1.1rem;
+    font-size: clamp(2.4rem, 4.6vw, 4.1rem);
     font-weight: 700;
   }
 
   .lede {
-    max-width: 52ch;
-    font-size: 0.92rem;
-    line-height: 1.72;
-    color: var(--muted);
-    margin: 0 0 1.1rem;
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.8rem;
-  }
-
-  .cta-wrap {
-    display: grid;
-    gap: 0.7rem;
-    margin-bottom: 1rem;
-    justify-items: start;
+    max-width: 44ch;
+    margin: 0 0 1.8rem;
+    font-size: 1.1rem;
+    color: var(--ash);
   }
 
   .cta {
     display: flex;
-    gap: 0.75rem;
     flex-wrap: wrap;
-    align-items: center;
+    gap: 0.75rem;
   }
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 0.95rem 0.55rem 0.85rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    font-family: var(--mono);
-    letter-spacing: 0.02em;
-    background: var(--accent);
-    color: #04101e;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    text-decoration: none;
-    transition:
-      background 140ms ease,
-      transform 130ms ease;
+  .hint {
+    margin: 1.4rem 0 0;
+    font-size: 0.9rem;
   }
 
-  .btn-primary:hover,
-  .btn-primary:focus-visible {
-    background: #93ffe5;
-    transform: translateY(-1px);
-    outline: none;
-  }
-
-  .btn-primary .arrow {
-    display: inline-block;
-    transition: transform 130ms ease;
-  }
-
-  .btn-primary:hover .arrow {
-    transform: translateX(3px);
-  }
-
-  .btn-link {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.88rem;
-    font-family: var(--mono);
-    color: var(--muted);
-    text-decoration: none;
-    position: relative;
-    padding-bottom: 1px;
-  }
-
-  .btn-link::after {
-    content: '';
+  /* The orb runs off the right edge of the viewport; its edges fade into the page. */
+  .orb-wrap {
     position: absolute;
+    top: 0;
     bottom: 0;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background: var(--muted);
-    transition: width 180ms ease;
+    right: calc(50% - 50vw);
+    width: min(64vw, 62rem);
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0, #000 22%),
+      linear-gradient(0deg, transparent 0, #000 16%),
+      linear-gradient(180deg, transparent 0, #000 8%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(90deg, transparent 0, #000 22%),
+      linear-gradient(0deg, transparent 0, #000 16%),
+      linear-gradient(180deg, transparent 0, #000 8%);
+    mask-composite: intersect;
   }
 
-  .btn-link:hover,
-  .btn-link:focus-visible {
-    color: var(--text);
-    outline: none;
+  .bento-section {
+    padding: 2rem 0 1rem;
   }
 
-  .btn-link:hover::after,
-  .btn-link:focus-visible::after {
-    width: 100%;
+  :global(.b-snippet) { grid-column: 1 / -1; }
+  :global(.b-board) { grid-column: 1 / -1; }
+
+  @media (min-width: 900px) {
+    :global(.b-snippet) { grid-column: 1 / 3; grid-row: 1; }
+    :global(.b-board) { grid-column: 3; grid-row: 1 / 4; }
+    :global(.b-live) { grid-column: 1; grid-row: 2; }
+    :global(.b-langs) { grid-column: 2; grid-row: 2; }
+    :global(.b-levels) { grid-column: 1 / 3; grid-row: 3; }
   }
 
-  .cta-note {
+  .code {
     margin: 0;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    font-size: 0.78rem;
-  }
-
-  .meta {
-    display: flex;
-    gap: 1.25rem;
-    flex-wrap: wrap;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .meta li {
-    font-size: 0.78rem;
-    color: var(--muted);
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    background: none;
-  }
-
-  .meta li::before {
-    content: '// ';
-    color: var(--accent);
-    opacity: 0.65;
-  }
-
-  .visual {
-    padding: 1rem;
-    border-radius: 30px;
-  }
-
-  .terminal {
-    border-radius: 22px;
-    padding: 1rem;
-    background: linear-gradient(180deg, rgba(6, 11, 20, 0.8), rgba(14, 25, 42, 0.82));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .terminal-head {
-    display: flex;
-    gap: 0.45rem;
-    margin-bottom: 1rem;
-  }
-
-  .terminal-head .dot {
-    all: unset;
-    width: 12px;
-    height: 12px;
-    min-width: 12px;
-    min-height: 12px;
-    max-width: 12px;
-    max-height: 12px;
-    aspect-ratio: 1 / 1;
-    flex: 0 0 12px;
-    display: block;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.18);
-  }
-
-  pre {
-    margin: 0;
+    font-family: var(--mono);
+    font-size: clamp(0.8rem, 1.5vw, 0.98rem);
+    line-height: 1.7;
+    color: var(--ash);
     white-space: pre-wrap;
-    font-family: var(--mono);
-    font-size: 0.92rem;
-    line-height: 1.7;
-    color: #d9eeff;
   }
 
-  .terminal-footer {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    background: var(--accent);
+    animation: blink 1s steps(2) infinite;
   }
 
-  .terminal-footer .label {
-    display: block;
-    color: var(--muted);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.25rem;
+  @keyframes blink {
+    50% { opacity: 0; }
   }
 
-  .terminal-footer strong {
-    font-family: var(--mono);
-    font-size: 1.2rem;
-  }
-
-  .sections {
-    padding: 1rem 0 2rem;
-  }
-
-  .section-copy {
-    margin-bottom: 1rem;
-  }
-
-  .section-copy h2 {
-    margin: 0.3rem 0 0.65rem;
-    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-    letter-spacing: -0.025em;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .grid article {
-    padding: 1rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .grid h3 {
-    margin: 0 0 0.5rem;
-    font-size: 0.82rem;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-
-  .grid p {
+  .rows {
+    list-style: none;
     margin: 0;
-    font-size: 0.88rem;
-    color: var(--muted);
-    line-height: 1.7;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
   }
 
-  @media (max-width: 980px) {
-    .hero-grid,
-    .grid {
-      grid-template-columns: 1fr;
-      display: grid;
-    }
+  .rows li {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+  }
 
-    .hero-grid {
-      min-height: auto;
+  .rows li:first-child {
+    background: rgba(38, 51, 212, 0.22);
+  }
+
+  .pos { color: var(--muted); }
+  .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wpm { color: var(--text); }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .chip {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.6rem 0.9rem 0.7rem;
+    border: 1px solid var(--line-strong);
+    border-bottom: 4px solid #05060c;
+    border-radius: 11px;
+    background: linear-gradient(180deg, #1b1d2d, #12131f);
+  }
+
+  .chip small { color: var(--muted); font-size: 0.78rem; }
+  .chip strong { font-size: 1.35rem; }
+  .chip.small { padding: 0.4rem 0.8rem 0.5rem; font-size: 0.85rem; }
+
+  .levels {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .levels li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.9rem;
+    align-items: baseline;
+  }
+
+  @media (max-width: 899px) {
+    .hero {
+      min-height: 0;
+    }
+    .orb-wrap {
+      position: relative;
+      order: -1;
+      right: auto;
+      width: auto;
+      height: 24rem;
+      margin: 0 calc(50% - 50vw);
+    }
+    .copy {
+      padding-top: 0;
     }
   }
 
-  @media (max-width: 640px) {
-    .cta {
-      width: 100%;
-    }
-
-    .cta :global(.button) {
-      width: 100%;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .caret { animation: none; }
   }
 </style>
