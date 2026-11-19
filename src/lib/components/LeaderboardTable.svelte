@@ -283,8 +283,6 @@
   .head-row {
     color: var(--muted);
     font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
     border-top: none;
   }
 
@@ -303,8 +301,6 @@
 
   .tier-separator small {
     font-size: 0.73rem;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
   }
 
   .loading-block {
@@ -361,8 +357,6 @@
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
     font-size: 0.76rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     border: 1px solid transparent;
     font-family: var(--mono);
     white-space: nowrap;
