@@ -34,33 +34,47 @@
 <style>
   .stats {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.75rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: var(--radius-sm);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    border-radius: 0;
+  }
+
+  .stats > div:not(.progress-wrap) {
+    padding: 0.55rem 0.9rem 0.65rem;
+    border: 1px solid var(--line-strong);
+    border-bottom: 4px solid #05060c;
+    border-radius: 11px;
+    background: linear-gradient(180deg, #1b1d2d, #12131f);
   }
 
   .label {
     display: block;
     color: var(--muted);
-    font-size: 0.74rem;
-    margin-bottom: 0.25rem;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+    margin-bottom: 0.1rem;
   }
 
   strong {
-    font-size: 1.05rem;
+    font-size: 1.5rem;
     font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
   }
 
   .progress-wrap {
-    grid-column: span 1;
+    grid-column: 1 / -1;
+  }
+
+  .progress-wrap .label {
+    display: none;
   }
 
   .track {
-    height: 0.55rem;
+    height: 0.4rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.06);
     overflow: hidden;
@@ -68,16 +82,13 @@
 
   .fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    background: var(--cobalt);
+    transition: width 120ms linear;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 700px) {
     .stats {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .progress-wrap {
-      grid-column: 1 / -1;
     }
   }
 </style>

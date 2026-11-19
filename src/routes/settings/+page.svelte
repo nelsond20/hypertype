@@ -60,7 +60,6 @@
 
 <section class="shell settings">
   <div>
-    <p class="eyebrow mono">Preferences</p>
     <h1>Settings</h1>
     <p class="subtle">Choose the corpus style, duration, and theme you want before a run.</p>
   </div>
@@ -133,13 +132,6 @@
     max-width: 820px;
   }
 
-  .eyebrow {
-    margin: 0;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.8rem;
-  }
 
   h1 {
     margin: 0.35rem 0 0.6rem;

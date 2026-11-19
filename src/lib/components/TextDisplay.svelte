@@ -26,17 +26,18 @@
 
 <style>
   .text {
-    padding: 1.2rem;
-    min-height: 250px;
+    padding: 1.6rem 1.8rem;
+    min-height: 280px;
+    background: #05060c;
   }
 
   p {
     margin: 0;
-    font-size: clamp(1rem, 2vw, 1.34rem);
+    font-size: clamp(1.05rem, 2vw, 1.4rem);
     line-height: 1.9;
     white-space: pre-wrap;
     word-break: break-word;
-    color: rgba(237, 244, 255, 0.58);
+    color: rgba(179, 183, 193, 0.5);
   }
 
   span {
@@ -69,7 +70,7 @@
     width: 100%;
     height: 0.16em;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--accent), transparent);
+    background: var(--accent);
     animation: blink 1s steps(1) infinite;
   }
 

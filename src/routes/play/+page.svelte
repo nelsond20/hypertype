@@ -63,9 +63,7 @@
 <section class="shell play">
   <div class="header">
     <div>
-      <p class="eyebrow mono">Focus mode</p>
-      <h1>Type code. Chase clean runs. Submit a score.</h1>
-      <p class="subtle">The text is seeded, the timer is real, and the leaderboard is public.</p>
+      <h1>Type the code. Beat the clock.</h1>
     </div>
     <!-- <div class="quick panel">
       <a class="button ghost" href="/settings">Open settings</a>
@@ -135,32 +133,14 @@
 
 <style>
   .play {
-    padding: 0.7rem 0 1.6rem;
+    padding: 1rem 0 1.6rem;
     display: grid;
-    gap: 0.9rem;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
     gap: 1rem;
-    align-items: center;
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.8rem;
   }
 
   h1 {
-    margin: 0.4rem 0 0.65rem;
-    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-    letter-spacing: -0.025em;
-    line-height: 1.24;
-    max-width: 26ch;
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
     font-weight: 700;
   }
 
@@ -170,14 +150,11 @@
     gap: 0.75rem;
     padding: 0.9rem;
     border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.02);
+    box-shadow: none;
   }
 
   .field span {
-    font-size: 0.78rem;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 0.85rem;
     color: var(--muted);
   }
 
@@ -186,20 +163,18 @@
     border-radius: 10px;
     padding: 0.6rem 0.8rem;
     font-family: var(--mono);
-    font-size: 0.84rem;
-    letter-spacing: 0.03em;
-    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.9rem;
   }
 
   @media (max-width: 980px) {
-    .header,
+    .controls {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 520px) {
     .controls {
       grid-template-columns: 1fr;
-      display: grid;
-    }
-
-    .header {
-      align-items: start;
     }
   }
 </style>

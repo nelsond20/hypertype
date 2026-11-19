@@ -525,7 +525,7 @@
     position: relative;
     padding: 0.8rem;
     border: 1px solid transparent;
-    background: rgba(255, 255, 255, 0.015);
+    background: transparent;
     transition:
       border-color 180ms ease,
       box-shadow 180ms ease,
@@ -533,21 +533,21 @@
   }
 
   .prompt-area:focus-visible {
-    box-shadow: 0 0 0 2px rgba(115, 224, 196, 0.45);
+    box-shadow: 0 0 0 2px rgba(123, 136, 255, 0.45);
   }
 
   .capture-status {
     display: grid;
     gap: 0.2rem;
     padding: 0.9rem 1rem;
-    border: 1px dashed rgba(159, 176, 204, 0.32);
+    border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: rgba(255, 255, 255, 0.02);
   }
 
   .prompt-area.ready .capture-status {
-    border-color: rgba(115, 224, 196, 0.45);
-    background: rgba(115, 224, 196, 0.08);
+    border-color: rgba(123, 136, 255, 0.45);
+    background: rgba(123, 136, 255, 0.08);
   }
 
   .prompt-area.invalid {
@@ -568,14 +568,14 @@
   }
 
   .prompt-area.ready:not(.invalid):not(.finished) {
-    border-color: rgba(115, 224, 196, 0.45);
-    box-shadow: 0 0 0 1px rgba(115, 224, 196, 0.22);
-    background: rgba(115, 224, 196, 0.04);
+    border-color: rgba(123, 136, 255, 0.45);
+    box-shadow: 0 0 0 1px rgba(123, 136, 255, 0.22);
+    background: rgba(123, 136, 255, 0.04);
   }
 
   .prompt-area.ready:not(.invalid):not(.finished) .capture-status {
-    border-color: rgba(115, 224, 196, 0.45);
-    background: rgba(115, 224, 196, 0.08);
+    border-color: rgba(123, 136, 255, 0.45);
+    background: rgba(123, 136, 255, 0.08);
   }
 
   .capture-status strong {
@@ -590,7 +590,7 @@
     gap: 0.8rem;
     padding: 1.5rem;
     text-align: center;
-    background: rgba(7, 17, 31, 0.76);
+    background: rgba(2, 2, 6, 0.82);
     backdrop-filter: blur(10px);
     border-radius: var(--radius);
     border: 1px solid rgba(255, 107, 129, 0.42);
@@ -620,7 +620,6 @@
 
   .time-up-overlay strong {
     font-size: clamp(1.6rem, 4vw, 2.6rem);
-    letter-spacing: 0.12em;
   }
 
   .actions,
@@ -635,28 +634,9 @@
   .buttons :global(.button),
   .modal-actions :global(.button),
   .time-up-overlay :global(.button) {
-    min-height: auto;
-    padding: 0.55rem 0.9rem;
-    border-radius: 10px;
-    font-size: 0.84rem;
-    font-family: var(--mono);
-    letter-spacing: 0.03em;
-  }
-
-  .actions :global(.button.primary),
-  .buttons :global(.button.primary),
-  .modal-actions :global(.button.primary),
-  .time-up-overlay :global(.button.primary) {
-    background: var(--accent);
-    color: #04101e;
-    border-color: transparent;
-  }
-
-  .actions :global(.button.primary:hover),
-  .buttons :global(.button.primary:hover),
-  .modal-actions :global(.button.primary:hover),
-  .time-up-overlay :global(.button.primary:hover) {
-    background: #93ffe5;
+    min-height: 2.5rem;
+    padding: 0.4rem 1rem 0.5rem;
+    font-size: 0.9rem;
   }
 
   .side {
@@ -670,11 +650,7 @@
   h3,
   h4 {
     margin: 0 0 0.6rem;
-    font-size: 0.82rem;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
+    font-size: 1.1rem;
   }
 
   .side p,
